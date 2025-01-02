@@ -1,0 +1,41 @@
+files:
+  root: \\192.168.8.204\ssd1\bilibiliArchive4
+  #root: F:\bilibiliArchive4_init_test
+  #root: "${user.dir}"
+  backup-settings-file: "${files.root}/backup_settings.json"
+  archives: "${files.root}/archives"
+  backup-config-avatars: "${files.root}/backup_config_avatars"
+  logs: "${files.root}/logs"
+  cache: "${files.root}/cache"
+  videos: "${files.archives}/videos"
+  comment-pictures: "${files.archives}/comment_pictures"
+  uploader-avatars: "${files.archives}/uploader_avatars"
+  emote: "${files.root}/emote"
+
+spring:
+  datasource:
+    master:
+      jdbc-url: "jdbc:sqlite:${files.root}/bilibili_archive.db?journal_mode=WAL"
+      driver-class-name: "org.sqlite.JDBC"
+#      jdbc-url: jdbc:mysql://192.168.8.204:3306/bilibili_archive_master
+#      username: root
+#      password: password
+#      driver-class-name: "com.mysql.cj.jdbc.Driver"
+    comment:
+      jdbc-url: "jdbc:sqlite:${files.archives}/comments.db?journal_mode=WAL"
+      driver-class-name: "org.sqlite.JDBC"
+#      jdbc-url: jdbc:mysql://192.168.8.204:3306/bilibili_archive_comment
+#      username: root
+#      password: password
+#      driver-class-name: "com.mysql.cj.jdbc.Driver"
+  mvc:
+    static-path-pattern: /**  # 默认静态资源路径
+
+server:
+  port: 80
+
+http-req:
+  logging: false
+  user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+  max-retries: 15
+

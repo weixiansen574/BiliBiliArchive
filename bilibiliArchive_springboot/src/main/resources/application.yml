@@ -1,0 +1,31 @@
+files:
+  root: "${user.dir}"
+  backup-settings-file: "${files.root}/backup_settings.json" #备份设置文件
+  archives: "${files.root}/archives" #存档文件夹 （视频、评论等）
+  backup-config-avatars: "${files.root}/backup_config_avatars" #备份配置的用户头像文件（账号用户头像、UP主备份的头像）
+  logs: "${files.root}/logs" #HTTP 请求的日志，http-req.logging 启用后，日志将存到这里。一般用不到
+  cache: "${files.root}/cache" #视频下载的缓存，纯视频与音频文件先下载到这里，然后ffmpeg进行合并到视频文件夹
+  videos: "${files.archives}/videos" #视频文件的保存路径，子文件是BV号文件夹，对应一个视频，内包含封面、视频、弹幕文件
+  comment-pictures: "${files.archives}/comment_pictures" #评论图片的保存文件夹
+  uploader-avatars: "${files.archives}/uploader_avatars" #UP主头像的保存文件夹，注意这与备份配置的UP主头像不一样
+  emote: "${files.root}/emote" #评论表情的保存文件夹，例如[doge]这类表情的图片。
+
+spring:
+  datasource: #数据库
+    master: #主
+      jdbc-url: "jdbc:sqlite:${files.root}/bilibili_archive.db?journal_mode=WAL"
+      driver-class-name: "org.sqlite.JDBC"
+    comment: #评论
+      jdbc-url: "jdbc:sqlite:${files.archives}/comments.db?journal_mode=WAL"
+      driver-class-name: "org.sqlite.JDBC"
+  mvc:
+    static-path-pattern: /**  # 静态资源路径，请勿修改
+
+server:
+  port: 8080 #服务器端口
+
+http-req: #网络请求，调用B站API用的
+  logging: false #启用日志
+  user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36" #请求头的user-agent字段
+  max-retries: 15 #API请求出现网络异常后重试的次数
+

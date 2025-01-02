@@ -1,0 +1,97 @@
+{
+	"comment":{
+		"mode":"ALL"
+	},
+    "update":[{
+        "loopCount":120,
+        "interval":7200000,
+        "updateVideoAndDanmaku":true,
+        "comment1": {
+            "mode": "LATEST_FIRST"
+        },
+        "comment2": {
+            "mode": "HOT",
+            "rootLimit": 200,
+            "replyUsePreview": false
+        },
+        "comment2Spacing": 2
+    }],
+	"video":{
+		"clarity":112,
+		"codecId":12
+	}
+}
+
+{
+	"comment":{
+		"mode":"FLOOR_SNIFFER"
+	},
+    "update":[{
+        "loopCount":288,
+        "interval":1800000,
+        "updateVideoAndDanmaku":true,
+        "comment1": {
+            "mode": "FLOOR_SNIFFER"
+        },
+        "comment2": {
+            "mode": "HOT",
+            "rootLimit": 160,
+            "replyUsePreview": false
+        },
+        "comment2Spacing": 5
+    },{
+        "loopCount":72,
+        "interval":7200000,
+        "updateVideoAndDanmaku":true,
+        "comment1": {
+            "mode": "FLOOR_SNIFFER"
+        },
+        "comment2": {
+            "mode": "HOT",
+            "rootLimit": 160,
+            "replyUsePreview": false
+        },
+        "comment2Spacing": 4
+    }],
+	"video":{
+		"clarity":112,
+		"codecId":12
+	}
+}
+
+{
+	"comment":{
+		"mode":"FLOOR_SNIFFER"
+	},
+    "update":[{
+        "loopCount":1728,
+        "interval":300000,
+        "updateVideoAndDanmaku":true,
+        "comment1": {
+            "mode": "FLOOR_SNIFFER"
+        },
+        "comment2": {
+            "mode": "HOT",
+            "rootLimit": 200,
+            "replyUsePreview": false
+        },
+        "comment2Spacing": 11
+    },{
+        "loopCount":72,
+        "interval":7200000,
+        "updateVideoAndDanmaku":true,
+        "comment1": {
+            "mode": "FLOOR_SNIFFER"
+        },
+        "comment2": {
+            "mode": "HOT",
+            "rootLimit": 160,
+            "replyUsePreview": false
+        },
+        "comment2Spacing": 4
+    }],
+	"video":{
+		"clarity":112,
+		"codecId":12
+	}
+}

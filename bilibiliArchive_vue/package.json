@@ -1,0 +1,38 @@
+{
+  "name": "bili-archive-vue",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@panzoom/panzoom": "^4.5.1",
+    "artplayer": "^5.1.6",
+    "artplayer-plugin-danmuku": "^5.1.4",
+    "axios": "^1.7.4",
+    "default-passive-events": "^2.0.0",
+    "element-plus": "^2.8.0",
+    "express": "^4.19.2",
+    "hevue-img-preview": "^6.1.0",
+    "highlight.js": "^11.10.0",
+    "mdui": "^1.0.2",
+    "mermaid": "^10.9.1",
+    "nodemon": "^3.1.4",
+    "panzoom": "^9.4.3",
+    "pinia": "^2.2.8",
+    "vue": "^3.4.35",
+    "vue-mermaid-render": "^0.1.4",
+    "vue-router": "^4.4.3",
+    "vuetify": "^3.7.5",
+    "yarn": "^1.22.22"
+  },
+  "devDependencies": {
+    "@nuxtjs/vuetify": "^0.1.1",
+    "@vitejs/plugin-vue": "^5.1.2",
+    "vite": "^5.4.0"
+  }
+}

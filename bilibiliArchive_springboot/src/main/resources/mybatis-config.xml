@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <!--开启驼峰命名规则自动转换-->
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true" />
+    </settings>
+    <typeHandlers>
+
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.CommentPictureList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.BlackListUserList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.VideoContentUpdateConfigList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.VideoPageVersionList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.VideoTagList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.config.VideoDownloadConfig" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.config.CommentDownloadConfig" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.core.biliApis.model.Pfs" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+    </typeHandlers>
+
+</configuration>
