@@ -142,9 +142,7 @@ public class FileService {
 
     public void saveNoAudioVideoFile(String bvid, long cid, File videoFile) throws IOException {
         File cidFolder = newBvidCidDirFile(bvid, cid);
-        if (videoFile.renameTo(new File(cidFolder, "video.mp4"))) {
-            throw new IOException("移动无音频视频文件失败");
-        }
+        FileUtil.moveAndOverwrite(videoFile,new File(cidFolder, "video.mp4"));
     }
 
     public File getCommentPictures() {

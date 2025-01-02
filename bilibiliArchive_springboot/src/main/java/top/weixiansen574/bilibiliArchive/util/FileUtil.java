@@ -2,6 +2,9 @@ package top.weixiansen574.bilibiliArchive.util;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class FileUtil {
     public static void outputToFile(InputStream inputStream, File file) throws IOException {
@@ -120,6 +123,18 @@ public class FileUtil {
             }
         }
         return totalSize;
+    }
+
+    public static void moveAndOverwrite(File sourceFile, File destFile) throws IOException {
+        if (sourceFile == null || destFile == null) {
+            throw new IllegalArgumentException("源文件或目标文件不能为空");
+        }
+
+        Path sourcePath = sourceFile.toPath();
+        Path destPath = destFile.toPath();
+
+        // 使用 Files.move 实现剪切并覆盖
+        Files.move(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
 }
