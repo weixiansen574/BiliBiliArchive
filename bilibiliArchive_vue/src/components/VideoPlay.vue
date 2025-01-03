@@ -564,6 +564,7 @@ const percentageColor = computed(() => {
   return 'purple'; // < 20% 为紫色
 });
 
+
 function updateVideo() {
   updateSubmitting.value = true;
   localStorage.setItem("update_cfg_video", JSON.stringify(updateVideoForm.video));
@@ -578,6 +579,17 @@ function updateVideo() {
         } else {
           ElMessage.error("存档姬未运行，请先运行再执行更新")
         }
+      } else if(data.code == 2400) {
+        ask("处理冲突","视频与现有更新计划冲突，需要移除该视频所有更新计划，是否删除该视频的更新计划？",() => {
+          axios.delete("/api/backup/video-update-plans/bvid/"+bvid)
+            .then(({data}) => {
+              if(data.code == 0){
+                ElMessage.success("删除更新任务成功，已删除"+data.data+"个");
+              } else {
+                ElMessage.error(data.message);
+              }
+            })
+        })
       } else {
         ElMessage.error(data.message);
       }
