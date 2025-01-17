@@ -1,4 +1,4 @@
-import { ElMessageBox,ElMessage } from 'element-plus'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
 export function formatTimestamp(timestamp) {
   const date = new Date(timestamp);
@@ -123,6 +123,8 @@ export function getVideoStateDesc(state) {
       return "UP主设置仅自己可见"
     case "SHADOW_BAN":
       return "仅UP主可见(ShadowBan)"
+    case "SEARCH_BAN":
+      return "正常，但禁止搜索"
     default:
       return state
   }

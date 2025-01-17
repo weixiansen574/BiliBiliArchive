@@ -30,7 +30,10 @@
             <DanmakusIcon class="instruct-icon" /><span>{{ videoInfo.danmaku }}</span>
             <span>{{ formatTimestamp(videoInfo.ctime * 1000) }}</span>
           </div>
-          <div class="video-id"><span>{{ bvid }}</span><span>AV{{ videoInfo.avid }}</span></div>
+          <div class="video-id">
+            <div>{{ bvid }}</div>
+            <div>AV{{ videoInfo.avid }}</div>
+          </div>
           <div class="tags" v-if="videoInfo.tags">
             <span class="tag" v-for="(tag, index) in videoInfo.tags" :key="tag.tag_id">
               {{ tag.tag_name }}
@@ -696,11 +699,12 @@ h3 {
 }
 
 .video-id {
+  display: flex;
   margin-top: 10px;
   color: gray;
 }
 
-.video-id>span {
+.video-id>div {
   margin-right: 8px;
 }
 
