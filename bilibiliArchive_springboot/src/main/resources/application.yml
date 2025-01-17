@@ -15,9 +15,11 @@ spring:
     master: #主
       jdbc-url: "jdbc:sqlite:${files.root}/bilibili_archive.db?journal_mode=WAL"
       driver-class-name: "org.sqlite.JDBC"
+      #maximum-pool-size: 1 #数据库连接池大小，仅对非sqlite数据库生效，sqlite默认为1且即使设置此值也不会生效。可不填来使用默认
     comment: #评论
       jdbc-url: "jdbc:sqlite:${files.archives}/comments.db?journal_mode=WAL"
       driver-class-name: "org.sqlite.JDBC"
+      #maximum-pool-size: 1
   mvc:
     static-path-pattern: /**  # 静态资源路径，请勿修改
 

@@ -116,7 +116,7 @@ public class HistoryVideoBackup extends VideoBackup {
         for (HistoryVideoInfo video : pendingDeleteVideos) {
             String bvid = video.bvid;
             //删除掉未失效的视频，保留失效的
-            VideoInfo videoInfo = MiscUtils.getVideoInfoOrChangeState(biliApiService, video);
+            VideoInfo videoInfo = MiscUtils.getVideoInfoOrChangeState(userContext, video);
             if (videoInfo == null){
                 PG.contentAndPrintf("发现历史记录视频已失效：[%s][%s]", bvid, video.title);
                 video.communityUpdateTime = System.currentTimeMillis();

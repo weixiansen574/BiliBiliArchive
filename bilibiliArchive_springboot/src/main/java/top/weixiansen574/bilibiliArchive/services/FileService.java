@@ -141,7 +141,7 @@ public class FileService {
     }
 
     public void saveNoAudioVideoFile(String bvid, long cid, File videoFile) throws IOException {
-        File cidFolder = newBvidCidDirFile(bvid, cid);
+        File cidFolder = newAndCreateBvidCidDirFile(bvid, cid);
         FileUtil.moveAndOverwrite(videoFile,new File(cidFolder, "video.mp4"));
     }
 

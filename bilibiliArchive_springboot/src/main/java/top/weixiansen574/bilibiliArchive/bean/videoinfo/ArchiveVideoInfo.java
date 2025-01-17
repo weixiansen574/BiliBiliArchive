@@ -23,6 +23,7 @@ public class ArchiveVideoInfo {
     public static final String STATE_PRIVATE = "PRIVATE";//作者设置仅自己可见
 
     public static final String STATE_SHADOW_BAN = "SHADOW_BAN";//虽然我不是哔哩发评反诈，但是它视频也会搞诈骗啊（欺骗UP主）。当然你不是视频发布者也有办法获知
+    public static final String STATE_SEARCH_BAN = "SEARCH_BAN";//禁止搜索。表现在搜索引擎点进视频，视频不见了，但是刷新网页后视频并没失效
 
     public static final int DOWNLOAD_STATE_OK = 0;
     public static final int DOWNLOAD_STATE_DOWNLOADING = 1;

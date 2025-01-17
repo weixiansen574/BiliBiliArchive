@@ -1,6 +1,12 @@
 package top.weixiansen574.bilibiliArchive.core.util;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.ResponseBody;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import top.weixiansen574.bilibiliArchive.bean.videoinfo.ArchiveVideoInfo;
+import top.weixiansen574.bilibiliArchive.core.UserContext;
 import top.weixiansen574.bilibiliArchive.core.biliApis.BiliApiService;
 import top.weixiansen574.bilibiliArchive.core.biliApis.BiliBiliApiException;
 import top.weixiansen574.bilibiliArchive.core.biliApis.GeneralResponse;
@@ -73,8 +79,10 @@ public class MiscUtils {
 
 
 
-    public static VideoInfo getVideoInfoOrChangeState(BiliApiService biliApiService,ArchiveVideoInfo videoInfo) throws IOException, BiliBiliApiException {
+    public static VideoInfo getVideoInfoOrChangeState(UserContext userContext, ArchiveVideoInfo videoInfo) throws IOException, BiliBiliApiException {
         String bvid = videoInfo.bvid;
+        BiliApiService biliApiService = userContext.biliApiService;
+        OkHttpClient httpClient = userContext.httpClient;
         //遇到失效且未备份，不改变其状态
         if (videoInfo.state.equals(ArchiveVideoInfo.STATE_FAILED_AND_NO_BACKUP)){
             return null;
@@ -85,6 +93,16 @@ public class MiscUtils {
             throw new BiliBiliApiException(resp,"获取视频状态失败，BV号："+bvid);
         }
         if (newState.equals(ArchiveVideoInfo.STATE_NORMAL)){
+            //禁止搜索的检查
+            Request request= new Request.Builder().url("https://www.bilibili.com/video/"+bvid)
+                    .addHeader("Referer","https://www.baidu.com").build();
+            ResponseBody body = OkHttpUtil.getResponseBodyNotNull(httpClient.newCall(request).execute());
+            Document document = Jsoup.parse(body.string());
+            //可能不严谨。因为这货，视频不见了，响应码却是200😅
+            if ("视频去哪了呢？_哔哩哔哩_bilibili".equals(document.title())){
+                videoInfo.state = ArchiveVideoInfo.STATE_SEARCH_BAN;
+                return null;
+            }
             return resp.data;
         }
         //考虑到视频的ShadowBan是一个珍贵的数据，UP主发现后可能会将视频删除，所以旧状态为ShadowBan且新状态不为正常的则使用旧状态

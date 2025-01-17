@@ -1,5 +1,5 @@
 files:
-  root: \\192.168.8.204\ssd1\bilibiliArchive4
+  root: G:\bilibiliArchive4
   #root: F:\bilibiliArchive4_init_test
   #root: "${user.dir}"
   backup-settings-file: "${files.root}/backup_settings.json"

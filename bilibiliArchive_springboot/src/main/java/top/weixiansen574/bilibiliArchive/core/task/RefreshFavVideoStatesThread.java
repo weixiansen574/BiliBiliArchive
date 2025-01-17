@@ -24,6 +24,7 @@ public class RefreshFavVideoStatesThread extends Thread {
     private final BackupFav backupFav;
     private final long favId;
 
+    private final UserContext userContext;
     private final BiliApiService biliApiService;
     private final VideoFavoriteMapper videoFavoriteMapper;
     private final VideoInfoMapper videoInfoMapper;
@@ -33,6 +34,7 @@ public class RefreshFavVideoStatesThread extends Thread {
         this.idChanger = idChanger;
         this.backupFav = backupFav;
         this.favId = backupFav.favId;
+        this.userContext = userContext;
 
         this.biliApiService = userContext.biliApiService;
         this.videoFavoriteMapper = userContext.videoFavoriteMapper;
@@ -55,7 +57,7 @@ public class RefreshFavVideoStatesThread extends Thread {
             String oldState = videoInfo.state;
             try {
                 //获取视频新状态
-                MiscUtils.getVideoInfoOrChangeState(biliApiService,videoInfo);
+                MiscUtils.getVideoInfoOrChangeState(userContext,videoInfo);
                 PG.contentAndData("%s『%s』状态：%s  ==> %s", new ProgressBar(favoriteVideoInfos.size(), i + 1),
                         videoInfo.bvid, MiscUtils.omit(videoInfo.title, 30), oldState, videoInfo.state);
                 videoInfoMapper.updateVideoStatus(videoInfo.state, videoInfo.bvid);

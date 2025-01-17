@@ -52,9 +52,9 @@ public class VideoUpdateTask implements Runnable{
                 return;
             }
             //更新视频
-            VideoInfo videoInfo = MiscUtils.getVideoInfoOrChangeState(biliApiService, archiveVideoInfo);
+            VideoInfo videoInfo = MiscUtils.getVideoInfoOrChangeState(userContext, archiveVideoInfo);
             if (videoInfo == null) {
-                archiveVideoInfo.communityUpdateTime = System.currentTimeMillis();
+                //archiveVideoInfo.communityUpdateTime = System.currentTimeMillis();
                 videoInfoMapper.update(archiveVideoInfo);
                 PG.content("发现视频[%s][%s]失效，未执行更新，已更新存档状态。保留对此视频的更新任务列表，以处理可能视频会复活的情况",
                         bvid, title);

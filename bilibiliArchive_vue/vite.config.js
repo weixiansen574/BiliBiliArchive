@@ -8,11 +8,11 @@ export default defineConfig({
         host: '0.0.0.0', // 使用IP能访问
         proxy: {
             '/api': {
-                target: 'http://127.0.0.1:80', // 后端 API 地址
+                target: 'http://192.168.1.6:80', // 后端 API 地址
                 changeOrigin: true, // 支持跨域
             },
             '/files': {
-              target: 'http://127.0.0.1:80',
+              target: 'http://192.168.1.6:80',
               changeOrigin: true,
           }
         }

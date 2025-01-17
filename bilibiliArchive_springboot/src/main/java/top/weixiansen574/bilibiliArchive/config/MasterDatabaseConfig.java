@@ -30,17 +30,23 @@ public class MasterDatabaseConfig {
     public DataSource masterDataSource(@Value("${spring.datasource.master.jdbc-url}") String jdbcUrl,
                                        @Value("${spring.datasource.master.username:}") String username,
                                        @Value("${spring.datasource.master.password:}") String password,
+                                       @Value("${spring.datasource.master.maximum-pool-size:#{null}}") Integer maximumPoolSize,
                                        @Value("${spring.datasource.master.driver-class-name}") String driverClassName) throws SQLException {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(jdbcUrl);
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         dataSource.setDriverClassName(driverClassName);
+        if (maximumPoolSize != null){
+            dataSource.setMaximumPoolSize(maximumPoolSize);
+        }
         if ("org.sqlite.JDBC".equals(driverClassName)){
             //sqlite数据库默认外键约束不启用，需要主动启用
             SQLiteConfig config = new SQLiteConfig();
             config.enforceForeignKeys(true);
             dataSource.setDataSourceProperties(config.toProperties());
+            //sqlite只能1，否则多线程会报SQLITE_BUSY，database is locked异常
+            dataSource.setMaximumPoolSize(1);
             new MasterSQLiteDBVC(dataSource.getConnection()).doInit();
         } else {
             new MasterMySqlDBVC(dataSource.getConnection()).doInit();

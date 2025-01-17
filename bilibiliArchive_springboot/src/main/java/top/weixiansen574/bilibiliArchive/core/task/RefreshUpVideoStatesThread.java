@@ -22,6 +22,7 @@ public class RefreshUpVideoStatesThread extends Thread{
     private final Exchanger<Integer> idChanger;
     private final BackupUploader backupUploader;
     private final long upUid;
+    private final UserContext userContext;
 
     private final BiliApiService biliApiService;
     private final VideoUploaderMapper videoUploaderMapper;
@@ -31,6 +32,7 @@ public class RefreshUpVideoStatesThread extends Thread{
         this.idChanger = idChanger;
         this.backupUploader = backupUploader;
         this.upUid = backupUploader.uid;
+        this.userContext = userContext;
 
         this.biliApiService = userContext.biliApiService;
         this.videoUploaderMapper = userContext.videoUploaderMapper;
@@ -53,7 +55,7 @@ public class RefreshUpVideoStatesThread extends Thread{
             String oldstate = videoInfo.state;
             try {
                 //获取视频新状态
-                MiscUtils.getVideoInfoOrChangeState(biliApiService,videoInfo);
+                MiscUtils.getVideoInfoOrChangeState(userContext,videoInfo);
                 PG.contentAndData("%s『%s』状态：%s  ==> %s", new ProgressBar(uploaderVideoInfos.size(), i + 1),
                         videoInfo.bvid, MiscUtils.omit(videoInfo.title, 30), oldstate, videoInfo.state);
                 videoInfoMapper.updateVideoStatus(videoInfo.state, videoInfo.bvid);

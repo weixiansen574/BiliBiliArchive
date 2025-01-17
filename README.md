@@ -83,9 +83,11 @@ spring:
     master: #主
       jdbc-url: "jdbc:sqlite:${files.root}/bilibili_archive.db?journal_mode=WAL"
       driver-class-name: "org.sqlite.JDBC"
+      #maximum-pool-size: 1 #数据库连接池大小，仅对非sqlite数据库生效，sqlite默认为1且即使设置此值也不会生效。可不填来使用默认
     comment: #评论
       jdbc-url: "jdbc:sqlite:${files.archives}/comments.db?journal_mode=WAL"
       driver-class-name: "org.sqlite.JDBC"
+      #maximum-pool-size: 1
   mvc:
     static-path-pattern: /**  # 静态资源路径，请勿修改
 
@@ -264,13 +266,22 @@ PS：动态还有文章的备份我不想做了，太复杂了那东西。直播
 
 # 视频条目状态展示
 
-| 失效                                                         | UP主删除(被锁定后删除也为此状态)                             |
-| :----------------------------------------------------------- | ------------------------------------------------------------ |
-| ![PixPin_2025-01-02_10-48-13](pictures/PixPin_2025-01-02_10-48-13.png) | ![PixPin_2025-01-02_10-51-25](pictures/PixPin_2025-01-02_10-51-25.png) |
-| UP主设置仅自己可见                                           | ShadowBan（类似评论的）或其他原因                            |
-| ![PixPin_2025-01-02_10-52-35](pictures/PixPin_2025-01-02_10-52-35.png) | ![PixPin_2025-01-02_11-02-50](pictures/PixPin_2025-01-02_11-02-50.png) |
-| 收藏夹屏蔽（“已失效”都不给留的那种）注：是条纹标识，标题样式与这无关 | 失效且未备份的收藏视频（历史记录备份可以拯救标题与封面）     |
-| ![PixPin_2025-01-02_11-06-39](pictures/PixPin_2025-01-02_11-06-39.png) | ![PixPin_2025-01-02_11-08-12](pictures/PixPin_2025-01-02_11-08-12.png) |
+
+
+- 失效  
+  ![PixPin_2025-01-02_10-48-13](pictures/PixPin_2025-01-02_10-48-13.png)
+- UP主删除(被锁定后删除也为此状态)  
+  ![PixPin_2025-01-02_10-51-25](pictures/PixPin_2025-01-02_10-51-25.png)
+- UP主设置仅自己可见  
+  ![PixPin_2025-01-02_10-52-35](pictures/PixPin_2025-01-02_10-52-35.png)
+- ShadowBan（类似评论的）或其他原因  
+  ![PixPin_2025-01-02_11-02-50](pictures/PixPin_2025-01-02_11-02-50.png)
+- 收藏夹屏蔽（“已失效”都不给留的那种）注：仅收藏夹条目。是条纹标识，标题样式为视频的状态 
+  ![PixPin_2025-01-02_11-06-39](pictures/PixPin_2025-01-02_11-06-39.png)
+- 失效且未备份的收藏视频（历史记录备份可以拯救标题与封面）  
+  ![PixPin_2025-01-02_11-08-12](pictures/PixPin_2025-01-02_11-08-12.png)
+- 视频可观看但禁止搜索 （紫色标题，图片待补充）
+
 
 
 
@@ -302,6 +313,7 @@ spring:
       username: root
       password: password
       driver-class-name: "com.mysql.cj.jdbc.Driver"
+      #maximum-pool-size: 1 #数据库连接池大小，仅对非sqlite数据库生效，sqlite默认为1且即使设置此值也不会生效。可不填来使用默认
     comment:
 #      jdbc-url: "jdbc:sqlite:${files.archives}/comments.db?journal_mode=WAL"
 #      driver-class-name: "org.sqlite.JDBC"
@@ -309,6 +321,7 @@ spring:
       username: root
       password: password
       driver-class-name: "com.mysql.cj.jdbc.Driver"
+      #maximum-pool-size:
 ```
 
 由于评论数据过于庞大，本软件将分为主（视频信息、备份设置等）数据库与评论数据库，分库存储。因为评论头像数据小且多，不以单文件来存储，而是存到数据库里。

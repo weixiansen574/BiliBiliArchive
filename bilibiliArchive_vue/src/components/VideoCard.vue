@@ -70,7 +70,10 @@ function getStateClass(state) {
     return "shadow-ban";
   }
   if (state == "PRIVATE") {
-    return "private"
+    return "private";
+  }
+  if (state == "SEARCH_BAN"){
+    return "search_ban";
   }
   if (state != "NORMAL") {
     return "hexie";
@@ -186,6 +189,10 @@ function formatDuration(seconds) {
 
 .private{
   color: red;
+}
+
+.search_ban{
+  color: purple;
 }
 
 a {

@@ -29,19 +29,25 @@ import java.util.Collections;
 public class CommentDatabaseConfig {
     @Bean(name = "commentDataSource")
     public DataSource commentDataSource(@Value("${spring.datasource.comment.jdbc-url}") String jdbcUrl,
-                                        @Value("${spring.datasource.master.username:}") String username,
-                                        @Value("${spring.datasource.master.password:}") String password,
+                                        @Value("${spring.datasource.comment.username:}") String username,
+                                        @Value("${spring.datasource.comment.password:}") String password,
+                                        @Value("${spring.datasource.comment.maximum-pool-size:#{null}}") Integer maximumPoolSize,
                                        @Value("${spring.datasource.comment.driver-class-name}") String driverClassName) throws Exception {
         HikariDataSource dataSource = new HikariDataSource();
         dataSource.setJdbcUrl(jdbcUrl);
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         dataSource.setDriverClassName(driverClassName);
+        if (maximumPoolSize != null){
+            dataSource.setMaximumPoolSize(maximumPoolSize);
+        }
         if ("org.sqlite.JDBC".equals(driverClassName)){
             //sqlite数据库默认外键约束不启用，需要主动启用
             SQLiteConfig config = new SQLiteConfig();
             config.enforceForeignKeys(true);
             dataSource.setDataSourceProperties(config.toProperties());
+            //sqlite只能1，否则多线程会报SQLITE_BUSY，database is locked异常
+            dataSource.setMaximumPoolSize(1);
             new CommentSQLiteDBVC(dataSource.getConnection()).doInit();
         } else {
             new CommentMySqlDBVC(dataSource.getConnection()).doInit();

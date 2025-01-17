@@ -64,12 +64,20 @@ public class PG {
     public static synchronized void contentAndPrintf(String format, Object... args){
         Progress progress = getViewProgress();
         String content = String.format(format, args);
+        if (progress == null){
+            System.out.println(content);
+            return;
+        }
         System.out.println("["+progress.title+"]"+content);
         contentAndData(progress,content, null);
     }
 
     public static synchronized void contentAndData(String content, Object data) {
-        contentAndData(getViewProgress(),content,data);
+        Progress progress = getViewProgress();
+        if (progress != null){
+            contentAndData(progress,content,data);
+        }
+
     }
 
     public static synchronized void contentAndData(String format, Object data, Object... args) {
@@ -85,7 +93,8 @@ public class PG {
     public static Progress getViewProgress(){
         Integer id = local.get();
         if (id == null){
-            throw new IllegalStateException("Uninitialized. Before that, place invoke titleInit(String title)");
+            //throw new IllegalStateException("Uninitialized. Before that, place invoke titleInit(String title)");
+            return null;
         }
         return viewMap.get(id);
     }

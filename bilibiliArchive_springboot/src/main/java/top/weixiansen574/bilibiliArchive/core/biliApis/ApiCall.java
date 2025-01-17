@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import top.weixiansen574.bilibiliArchive.core.operation.progress.PG;
 import top.weixiansen574.bilibiliArchive.core.util.MiscUtils;
 
 import java.io.IOException;
@@ -93,7 +94,7 @@ public final class ApiCall<T extends GeneralResponse<R>, R> implements Call<T> {
                     rawCallField.set(clone, getCallFactory().newCall(request));
                     Response<T> response = clone.execute();
                     if (response.code() == 412) {
-                        System.out.println("收到412错误，等" + (3) + "秒后重试，" + i + "，response信息：" + response);
+                        PG.content("收到412错误，等3秒后重试，%d/1000，response信息：%s",i,response);
                         MiscUtils.sleepNoException(3000);
                     } else {
                         return response;
