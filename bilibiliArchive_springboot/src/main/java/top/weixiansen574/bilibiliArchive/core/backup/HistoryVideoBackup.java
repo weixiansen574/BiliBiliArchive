@@ -112,14 +112,12 @@ public class HistoryVideoBackup extends VideoBackup {
             }
             default -> throw new RuntimeException("非法autoDeleteMethod：" + his.autoDeleteMethod);
         }
-
         for (HistoryVideoInfo video : pendingDeleteVideos) {
             String bvid = video.bvid;
             //删除掉未失效的视频，保留失效的
-            VideoInfo videoInfo = MiscUtils.getVideoInfoOrChangeState(userContext, video);
-            if (videoInfo == null){
+            MiscUtils.getVideoInfoOrChangeState(userContext, video);
+            if (!video.state.equals(ArchiveVideoInfo.STATE_NORMAL)){
                 PG.contentAndPrintf("发现历史记录视频已失效：[%s][%s]", bvid, video.title);
-                video.communityUpdateTime = System.currentTimeMillis();
                 videoInfoMapper.update(video);
             } else {
                 PG.contentAndPrintf("正在删除历史记录视频：%s「%s」",bvid,video.title);

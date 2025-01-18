@@ -61,7 +61,7 @@ public class VideoUpdateTask implements Runnable{
                 pgRemove();
                 return;
             }
-            archiveVideoInfo.state = ArchiveVideoInfo.STATE_NORMAL;//如果它之前失效但是现在复活了
+            //archiveVideoInfo.state = ArchiveVideoInfo.STATE_NORMAL;//如果它之前失效但是现在复活了
             PG.content("正在更新视频项目[%s][%s]……", bvid, title);
             CommentDownloadConfig comment1 = plan.commentConfig1;
             CommentDownloadConfig comment2 = plan.commentConfig2;

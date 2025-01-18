@@ -101,7 +101,9 @@ public class MiscUtils {
             //可能不严谨。因为这货，视频不见了，响应码却是200😅
             if ("视频去哪了呢？_哔哩哔哩_bilibili".equals(document.title())){
                 videoInfo.state = ArchiveVideoInfo.STATE_SEARCH_BAN;
-                return null;
+                //不返回null，依旧返回视频信息，视频仅禁止搜索了而已
+            } else {
+                videoInfo.state = ArchiveVideoInfo.STATE_NORMAL;
             }
             return resp.data;
         }
