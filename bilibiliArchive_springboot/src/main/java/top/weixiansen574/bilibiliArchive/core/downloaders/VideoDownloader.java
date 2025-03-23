@@ -16,6 +16,7 @@ import top.weixiansen574.bilibiliArchive.core.biliApis.model.VideoPage;
 import top.weixiansen574.bilibiliArchive.core.biliApis.model.VideoPlayUrlInfo;
 import top.weixiansen574.bilibiliArchive.core.http.ResponseNotSuccessfulException;
 import top.weixiansen574.bilibiliArchive.core.operation.progress.PG;
+import top.weixiansen574.bilibiliArchive.core.util.MiscUtils;
 import top.weixiansen574.bilibiliArchive.mapper.comment.AvatarMapper;
 import top.weixiansen574.bilibiliArchive.mapper.comment.CommentMapper;
 import top.weixiansen574.bilibiliArchive.mapper.master.SubtitleMapper;
@@ -98,11 +99,38 @@ public class VideoDownloader extends CommentDownloader {
     }
 
 
-    public void downloadCover(String coverUrl, String bvid) throws IOException {
+    public void downloadCoverIfNotExists(String coverUrl, String bvid) throws IOException {
         PG.content("正在下载封面");
-        Request request = createDownloadRequestFromTheVideo(coverUrl, bvid);
         File coverFile = fileService.createCoverFile(bvid);
-        downloadContentAndRetry(request, coverFile, 15);
+        if (!coverFile.exists()) {
+            Request request = createDownloadRequestFromTheVideo(coverUrl, bvid);
+            downloadContentAndRetry(request, coverFile, 15);
+        }
+    }
+
+    public void downloadCoverToChangedIfNotExists(String coverUrl, String bvid) throws IOException {
+        PG.content("正在下载封面");
+        File coverFile = fileService.getOrCreateChangedCoverFile(bvid, MiscUtils.getEndPathForHttpUrl(coverUrl));
+        if (!coverFile.exists()) {
+            Request request = createDownloadRequestFromTheVideo(coverUrl, bvid);
+            downloadContentAndRetry(request, coverFile, 15);
+        }
+    }
+
+    /**
+     * 下载视频合作人列表中的头像信息，不过，不采用哈希名机制放在池里面避免重复，放在视频文件夹中，方便删除。由于合作视频不多，对硬盘的消耗可接受。
+     */
+    public void downloadStaffAvatarsIfNotExists(String bvid,List<VideoInfo.Staff> staffList) throws IOException {
+        if (staffList == null){
+            return;
+        }
+        for (VideoInfo.Staff staff : staffList) {
+            File file = fileService.getOrCreateStaffAvatarFile(bvid, MiscUtils.getEndPathForHttpUrl(staff.face));
+            if (!file.exists()){
+                Request request = createDownloadRequestFromTheVideo(staff.face, bvid);
+                downloadContentAndRetry(request, file, 15);
+            }
+        }
     }
 
     /**

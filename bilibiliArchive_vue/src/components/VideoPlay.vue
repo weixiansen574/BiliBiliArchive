@@ -16,9 +16,20 @@
       </template>
       <el-tabs v-model="activeName" v-else>
         <el-tab-pane label="详情" name="details" class="tab1">
-          <div class="uploader">
+          <div class="staff-list" v-if="videoInfo.staff">
+            <div v-for="staff in videoInfo.staff" class="staff">
+              <a :href="'//space.bilibili.com/' + staff.mid" target="_blank">
+                <img :src="getStaffAvatarUrl(bvid, staff.face)" alt="头像" class="uploader-avatar">
+              </a>
+              <div class="staff-info">
+                <div class="staff-name">{{ staff.name }}</div>
+                <div class="staff-title">{{ staff.title }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="uploader" v-else>
             <a :href="'//space.bilibili.com/' + videoInfo.ownerMid" target="_blank">
-              <img :src="getUpAvatarUrl(videoInfo.ownerAvatarUrl)" alt="头像">
+              <img :src="getUpAvatarUrl(videoInfo.ownerAvatarUrl)" alt="头像" class="uploader-avatar">
             </a>
             {{ videoInfo.ownerName }}
           </div>
@@ -58,6 +69,25 @@
             </div>
           </div>
           <div class="description">{{ videoInfo.desc }}</div>
+          <div v-if="videoInfo.metadataChanges.length > 0">
+            <h3>信息更新历史</h3>
+            <div v-for="data in videoInfo.metadataChanges" class="change-log">
+              <!-- <div>更新保存时间 2025-1-22 13:57:36</div> -->
+              <div class="clog-line">
+                <img class="cover" :src="getChangedCoverUrl(bvid, data.coverUrl)">
+                <div class="title-and-time">
+                  <h3 class="clog-video-title">{{ data.title }}</h3>
+                  <p class="clog-save-time">保存于：{{ formatTimestamp(data.saveTime) }}</p>
+                </div>
+              </div>
+              <div class="tags" v-if="data.tags">
+                <span class="tag" v-for="tag in data.tags" :key="tag.tag_id">
+                  {{ tag.tag_name }}
+                </span>
+              </div>
+              <div class="description">{{ data.desc }}</div>
+            </div>
+          </div>
         </el-tab-pane>
         <el-tab-pane :label="videoInfo ? '评论 ' + commentCount + ' ' + allCommentCount : '评论'" name="comments">
           <Comments v-if="videoInfo" :oid="videoInfo.avid" type="1" :up-uid="videoInfo.ownerMid" />
@@ -130,7 +160,13 @@
                 </div>
               </el-tooltip>
             </div>
-            <h3>更新存档</h3>
+            <h3>存档更新</h3>
+            <el-dialog title="视频更新计划表" v-model="updatePlansDialogVisible"
+              style="min-width: 350px;width: 90%; max-width: 800px;" align-center>
+              <div style="height: 77vh;overflow-y: auto;">
+                <UpdatePlans :bvid="bvid"></UpdatePlans>
+              </div>
+            </el-dialog>
             <el-dialog title="更新视频" v-model="updateVideoDialogVisible"
               style="min-width: 350px;width: 90%; max-width: 600px;" align-center>
               <el-form :model="updateVideoForm" label-width="auto">
@@ -206,6 +242,7 @@
                 </div>
               </template>
             </el-dialog>
+            <el-button type="primary" @click="updatePlansDialogVisible = true">查看更新计划</el-button>
             <el-button type="primary" @click="ask('确认更新吗？',
               '更新视频，需要更新计划列表里不存在此视频的计划，否则因冲突无法更新。执行更新，视频备份配置优先级会调整到FINAL，将来不会被其他备份配置覆盖！',
               () => updateVideoDialogVisible = true)">立即更新</el-button>
@@ -213,7 +250,6 @@
               '向视频更新计划列表插入视频备份配置，起始时间为当前时间。此操作将移除已存在的视频更新计划。接着会将备份配置优先级将调到FINAL，将来不会被其他备份配置覆盖',
               () => { addUpdatePlanDialogVisible = true; loadVideoBackupConfigs() })">添加更新计划</el-button>
           </div>
-
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -223,7 +259,7 @@
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { formatTimestamp } from '../util';
+import { formatTimestamp, getChangedCoverUrl } from '../util';
 import axios from 'axios';
 import Artplayer from 'artplayer';
 import artplayerPluginDanmuku from 'artplayer-plugin-danmuku';
@@ -240,8 +276,9 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import CommentConfig from "./CommentConfig.vue"
 import VideoConfig from './VideoConfig.vue';
 import UpdateConfigs from './UpdateConfigs.vue';
-import { ask,formatDiskUsage,getVideoStateDesc } from "../util"
+import { ask, formatDiskUsage, getVideoStateDesc } from "../util"
 import { useUserStore } from "../stores/userStore";
+import UpdatePlans from "../components/UpdatePlans.vue"
 
 const userStore = useUserStore();
 
@@ -271,6 +308,9 @@ const addUpdatePlanDialogVisible = ref(false);
 const videoBackupConfigs = ref(null);
 const addUpdatePlanSubmitting = ref(false);
 
+const updatePlansDialogVisible = ref(false);
+
+//const metadataChanges = ref([]);
 
 let localVideoCfg = JSON.parse(localStorage.getItem("update_cfg_video"));
 let localCommentCfg = JSON.parse(localStorage.getItem("update_cfg_comment"))
@@ -360,10 +400,12 @@ onMounted(() => {
     rootCommentCount.value = videoData.rootCommentCount;
     diskUsage.value = videoData.diskUsage;
 
-    document.title = videoData.videoInfo.title;
+    document.title = videoData.videoInfo.title+"_哔哩存档姬";
 
     var firstPage = videoInfo.value.pagesVersionList[videoInfo.value.pagesVersionList.length - 1].pages[0];
     currentPage.value = firstPage;
+
+
 
     // 获取最新的剧集版本
     if (videoInfo.value.pagesVersionList && videoInfo.value.pagesVersionList.length > 0) {
@@ -442,6 +484,11 @@ function getUpAvatarUrl(originalUrl) {
   const apiUrl = `/files/archives/uploader-avatars/${fileName}`;
 
   return apiUrl;
+}
+
+function getStaffAvatarUrl(bvid, originalUrl) {
+  const fileName = originalUrl.split('/').pop();
+  return `/files/archives/videos/${bvid}/staff-avatars/${fileName}`;
 }
 
 function getCodecName(codecId) {
@@ -582,12 +629,12 @@ function updateVideo() {
         } else {
           ElMessage.error("存档姬未运行，请先运行再执行更新")
         }
-      } else if(data.code == 2400) {
-        ask("处理冲突","视频与现有更新计划冲突，需要移除该视频所有更新计划，是否删除该视频的更新计划？",() => {
-          axios.delete("/api/backup/video-update-plans/bvid/"+bvid)
-            .then(({data}) => {
-              if(data.code == 0){
-                ElMessage.success("删除更新任务成功，已删除"+data.data+"个");
+      } else if (data.code == 2400) {
+        ask("处理冲突", "视频与现有更新计划冲突，需要移除该视频所有更新计划，是否删除该视频的更新计划？", () => {
+          axios.delete("/api/backup/video-update-plans/bvid/" + bvid)
+            .then(({ data }) => {
+              if (data.code == 0) {
+                ElMessage.success("删除更新任务成功，已删除" + data.data + "个");
               } else {
                 ElMessage.error(data.message);
               }
@@ -658,6 +705,7 @@ h3 {
 
 .video-extensions-card {
   padding-inline: 15px;
+  padding-bottom: 15px;
   margin-bottom: 20px;
 }
 
@@ -674,9 +722,9 @@ h3 {
   align-items: center;
 }
 
-.uploader img {
-  width: 35px;
-  height: 35px;
+.uploader-avatar {
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   margin-right: 10px;
   border: 1px solid #ddd;
@@ -722,7 +770,7 @@ h3 {
   display: flex;
   align-items: center;
   gap: 40px;
-  margin-block: 12px;
+  margin-top: 12px;
   color: #61666D;
 }
 
@@ -742,6 +790,8 @@ h3 {
   white-space: pre-line;
   word-wrap: break-word;
   word-break: keep-all;
+  margin-bottom: 10px;
+  margin-top: 12px;
 }
 
 .page-version {
@@ -867,14 +917,13 @@ h3 {
   /* 允许内容换行 */
   word-break: break-word;
   /* 如果是长词，允许断字 */
-  cursor: default;
   box-sizing: border-box;
 }
 
-.custom-tag:hover {
+/* .custom-tag:hover {
   background-color: #ecf5ff;
   border-color: #c6e2ff;
-}
+} */
 
 
 /* .info-card{
@@ -934,5 +983,63 @@ h3 {
 
 .el-form::-webkit-scrollbar {
   display: none;
+}
+
+.staff {
+  display: flex;
+}
+
+.staff-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
+.staff-list {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 30px;
+  row-gap: 10px;
+}
+
+.staff-title {
+  color: #9499A0;
+  border: #9499A0 0.8px solid;
+  border-radius: 3px;
+  font-size: 11px;
+  height: 14px;
+  line-height: 15px;
+  width: fit-content;
+  padding: 0 4px;
+}
+
+.change-log {
+  border-top: 1px solid #E4E7ED;
+  padding-top: 10px;
+}
+
+.clog-line {
+  display: flex;
+}
+
+.title-and-time {
+  margin-left: 8px;
+}
+
+.cover {
+  aspect-ratio: 16/10;
+  width: 160px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.clog-video-title {
+  margin: 10px 0;
+}
+
+.clog-save-time {
+  margin: 0;
+  color: gray;
 }
 </style>

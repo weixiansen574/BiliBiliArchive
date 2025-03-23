@@ -32,7 +32,6 @@ public class VideoController {
     public static final int SORT_TYPE_ASC = 1;
 
 
-
     public final VideoInfoMapper videoInfoMapper;
     public final VideoFavoriteMapper videoFavoriteMapper;
     public final VideoHistoryMapper videoHistoryMapper;
@@ -53,22 +52,22 @@ public class VideoController {
     }
 
     @GetMapping("info/{bvid}")
-    public BaseResponse<ArchiveVideoInfo> getVideoInfo(@PathVariable String bvid){
+    public BaseResponse<ArchiveVideoInfo> getVideoInfo(@PathVariable String bvid) {
         ArchiveVideoInfo videoInfo = videoInfoMapper.selectByBvid(bvid);
         if (videoInfo == null) {
-            return BaseResponse.error(ResponseCode.NOT_FOUND,"视频信息未找到");
+            return BaseResponse.error(ResponseCode.NOT_FOUND, "视频信息未找到");
         }
         return BaseResponse.ok(videoInfo);
     }
 
     @GetMapping("info-ext/{bvid}")
-    public BaseResponse<VideoInfoResp> getVideoInfoExt(@PathVariable String bvid){
+    public BaseResponse<VideoInfoResp> getVideoInfoExt(@PathVariable String bvid) {
         ArchiveVideoInfo videoInfo = videoInfoMapper.selectByBvid(bvid);
         if (videoInfo == null) {
-            return BaseResponse.error(ResponseCode.NOT_FOUND,"视频信息未找到");
+            return BaseResponse.error(ResponseCode.NOT_FOUND, "视频信息未找到");
         }
-        return BaseResponse.ok(new VideoInfoResp(videoInfo,commentMapper.selectCommentAllCountForOid(videoInfo.avid,1),
-                commentMapper.selectRootCommentCountForOid(videoInfo.avid,1),
+        return BaseResponse.ok(new VideoInfoResp(videoInfo, commentMapper.selectCommentAllCountForOid(videoInfo.avid, 1),
+                commentMapper.selectRootCommentCountForOid(videoInfo.avid, 1),
                 FileUtil.calculateSize(fileService.newBvidDirFile(videoInfo.bvid))));
     }
 
@@ -89,16 +88,16 @@ public class VideoController {
     }
 
     @GetMapping("history/{uid}")
-    public BaseResponse<List<HistoryVideoInfo>> getHisVideoInfos(@PathVariable long uid,@RequestParam(defaultValue = "1") int pn,
-                                                                 @RequestParam(name = "as_of",required = false) Long asOf,
-                                                                 @RequestParam(name = "failed_only",defaultValue = "false") boolean failedOnly){
-        int offset = (pn-1) * 30;
-        return BaseResponse.ok(videoHistoryMapper.selectPageByUid(uid,30,offset,failedOnly,asOf));
+    public BaseResponse<List<HistoryVideoInfo>> getHisVideoInfos(@PathVariable long uid, @RequestParam(defaultValue = "1") int pn,
+                                                                 @RequestParam(name = "as_of", required = false) Long asOf,
+                                                                 @RequestParam(name = "failed_only", defaultValue = "false") boolean failedOnly) {
+        int offset = (pn - 1) * 30;
+        return BaseResponse.ok(videoHistoryMapper.selectPageByUid(uid, 30, offset, failedOnly, asOf));
     }
 
     @GetMapping("uploader/{upUid}")
-    public BaseResponse<List<UploaderVideoInfo>> getUPVideoInfos(@PathVariable long upUid,@RequestParam(defaultValue = "1") int pn,
-                                                                 @RequestParam(defaultValue = "30") int ps){
+    public BaseResponse<List<UploaderVideoInfo>> getUPVideoInfos(@PathVariable long upUid, @RequestParam(defaultValue = "1") int pn,
+                                                                 @RequestParam(defaultValue = "30") int ps) {
         pn = Math.max(pn, 1);
         // 计算偏移量
         int offset = (pn - 1) * ps;
@@ -108,12 +107,22 @@ public class VideoController {
         return BaseResponse.ok(uploaderVideoInfos);
     }
 
-    /** 获取所有存档的视频
+    @GetMapping("search")
+    public BaseResponse<List<ArchiveVideoInfo>> searchVideos(@RequestParam(required = false) String text) {
+        if (text == null || text.length() < 1) {
+            return BaseResponse.error(ResponseCode.ILLEGAL_REQUEST, "请输入搜索内容");
+        }
+        return BaseResponse.ok(videoInfoMapper.searchVideos("%" + text + "%"));
+    }
+
+    /**
+     * 获取所有存档的视频
      * 但这个烂尾了，在前端没有做任何东西，原因：无法获取总数，如果两次查询，第一次获取总数，第二次获取列表数据，导致两次全表搜索，期望一次
-     * @param pn 页码
-     * @param ps 页大小
-     * @param sortBy 排序依据
-     * @param sortType 排序类型
+     *
+     * @param pn         页码
+     * @param ps         页大小
+     * @param sortBy     排序依据
+     * @param sortType   排序类型
      * @param searchText 搜索文本
      * @return
      */
@@ -138,7 +147,7 @@ public class VideoController {
                 sortByColumn = "save_time";
                 break;
             default:
-                return BaseResponse.badRequest("非法sort_by:"+sortBy);
+                return BaseResponse.badRequest("非法sort_by:" + sortBy);
         }
 
         // 转换排序类型
@@ -158,7 +167,6 @@ public class VideoController {
         // 返回结果
         return BaseResponse.ok(result);
     }
-
 
 
 }

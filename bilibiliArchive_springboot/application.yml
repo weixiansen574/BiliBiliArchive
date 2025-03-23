@@ -1,6 +1,6 @@
 #特别注意：这是我本人开发的环境，请根据你的情况修改
 files:
-  root: G:\bilibiliArchive4
+  root: \\192.168.8.204\ssd1\bilibiliArchive4
   #root: F:\bilibiliArchive4_init_test
   #root: "${user.dir}"
   backup-settings-file: "${files.root}/backup_settings.json"
@@ -36,7 +36,7 @@ server:
   port: 80
 
 http-req:
-  logging: false
+  logging: true
   user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
   max-retries: 15
 

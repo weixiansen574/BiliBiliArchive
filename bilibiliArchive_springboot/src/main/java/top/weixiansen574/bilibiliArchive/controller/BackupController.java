@@ -523,6 +523,11 @@ public class BackupController {
         return BaseResponse.ok(backupService.removeVideoUpdatePlansByBvid(bvid));
     }
 
+    @DeleteMapping("video-update-plans")
+    public BaseResponse<Integer> deleteAllVideoUpdates(){
+        return BaseResponse.ok(backupService.removeAllVideoUpdatePlans());
+    }
+
     //POST update-video/{bvid}
     //POST add-video-update-plans/{bvid}
 

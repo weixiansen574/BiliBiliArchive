@@ -17,7 +17,7 @@ public class WbiFactory {
     private LocalDate lastRefreshDate;
 
     public void refresh(okhttp3.Call.Factory factory) throws IOException {
-        Request request = new Request.Builder()
+        /*Request request = new Request.Builder()
                 .url("https://api.bilibili.com/x/web-interface/nav")
                 .build();
         Response response = factory.newCall(request).execute();
@@ -30,7 +30,8 @@ public class WbiFactory {
 
         Nav nav = jsonObject.getObject("data", Nav.class);
         this.lastRefreshDate = LocalDate.now();
-        wbi = new Wbi(nav);
+        wbi = new Wbi(nav);*/
+        wbi = new Wbi("7cd084941338484aae1ad9425b84077c","4932caff0ff746eab6f01bf08b70ac45");
     }
 
     public synchronized Wbi getWbiOrFresh(okhttp3.Call.Factory factory) throws IOException {

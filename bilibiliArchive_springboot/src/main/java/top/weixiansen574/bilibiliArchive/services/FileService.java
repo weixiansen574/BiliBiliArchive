@@ -83,6 +83,34 @@ public class FileService {
         return new File(cidFolder, "danmaku.xml");
     }
 
+    public File getOrCreateChangedCoversDir(String bvid) throws IOException {
+        File bvidFolder = FileUtil.getOrCreateDir(videos, bvid);
+        return FileUtil.getOrCreateDir(bvidFolder,"changed_covers");
+    }
+
+    public File getOrCreateChangedCoverFile(String bvid, String fileName) throws IOException {
+        return new File(getOrCreateChangedCoversDir(bvid),fileName);
+    }
+
+    public File newChangedCoverFile(String bvid,String fileName){
+        File bvidDirFile = new File(newBvidDirFile(bvid),"changed_covers");
+        return new File(bvidDirFile,fileName);
+    }
+
+    public File getOrCreateStaffAvatarsDir(String bvid) throws IOException {
+        File bvidFolder = FileUtil.getOrCreateDir(videos, bvid);
+        return FileUtil.getOrCreateDir(bvidFolder,"staff_avatars");
+    }
+
+    public File getOrCreateStaffAvatarFile(String bvid,String fileName) throws IOException {
+        return new File(getOrCreateStaffAvatarsDir(bvid),fileName);
+    }
+
+    public File newStaffAvatarFile(String bvid,String fileName){
+        File bvidDirFile = new File(newBvidDirFile(bvid),"staff_avatars");
+        return new File(bvidDirFile,fileName);
+    }
+
     /**
      * 获取视频文件夹，如果没有创建一个
      * @param bvid

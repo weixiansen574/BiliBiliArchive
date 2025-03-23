@@ -4,24 +4,28 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import top.weixiansen574.bilibiliArchive.bean.BiliUser;
 import top.weixiansen574.bilibiliArchive.bean.VideoBackupConfig;
+import top.weixiansen574.bilibiliArchive.bean.VideoMetadataLog;
 import top.weixiansen574.bilibiliArchive.bean.config.CommentDownloadConfig;
 import top.weixiansen574.bilibiliArchive.bean.config.VideoDownloadConfig;
-import top.weixiansen574.bilibiliArchive.bean.list.VideoPageVersionList;
+import top.weixiansen574.bilibiliArchive.bean.list.MetadataChangeList;
+import top.weixiansen574.bilibiliArchive.bean.list.VideoTagList;
 import top.weixiansen574.bilibiliArchive.bean.videoinfo.ArchiveVideoInfo;
 import top.weixiansen574.bilibiliArchive.bean.videoinfo.DownloadedVideoPage;
-import top.weixiansen574.bilibiliArchive.bean.videoinfo.VideoPageVersion;
 import top.weixiansen574.bilibiliArchive.core.ContentUpdateThread;
 import top.weixiansen574.bilibiliArchive.core.PriorityManger;
 import top.weixiansen574.bilibiliArchive.core.UserContext;
 import top.weixiansen574.bilibiliArchive.core.biliApis.BiliBiliApiException;
 import top.weixiansen574.bilibiliArchive.core.biliApis.model.VideoInfo;
+import top.weixiansen574.bilibiliArchive.core.downloaders.CommentDownloader;
 import top.weixiansen574.bilibiliArchive.core.downloaders.VideoDownloader;
 import top.weixiansen574.bilibiliArchive.core.operation.exception.ExceptionRecorder;
 import top.weixiansen574.bilibiliArchive.core.operation.progress.PG;
+import top.weixiansen574.bilibiliArchive.core.util.MiscUtils;
 import top.weixiansen574.bilibiliArchive.mapper.master.VideoInfoMapper;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class VideoBackupCall implements Comparable<VideoBackupCall>, KeyedCall<Void> {
     private final VideoInfo videoInfo;
@@ -36,15 +40,12 @@ public class VideoBackupCall implements Comparable<VideoBackupCall>, KeyedCall<V
     private final UserContext userContext;
     private final BiliUser biliUser;
 
-
-
     public VideoBackupCall(VideoInfo videoInfo, UserContext userContext, PriorityManger priorityManger, ContentUpdateThread contentUpdateThread, VideoBackupConfig videoBackupConfig) {
         this.videoInfo = videoInfo;
         this.priorityManger = priorityManger;
         this.contentUpdateThread = contentUpdateThread;
         this.config = videoBackupConfig;
-
-        this.videoInfoMapper = userContext.videoInfoMapper;;
+        this.videoInfoMapper = userContext.videoInfoMapper;
         this.videoDownloader = userContext.videoDownloader;
         this.userContext = userContext;
         this.biliUser = userContext.biliUser;
@@ -53,19 +54,19 @@ public class VideoBackupCall implements Comparable<VideoBackupCall>, KeyedCall<V
 
     @Override
     public Void call() throws Exception {
-        PG.titleInit("视频备份·"+videoInfo.bvid+"「"+videoInfo.title+"」");
+        PG.titleInit("视频备份·" + videoInfo.bvid + "「" + videoInfo.title + "」");
         //System.out.printf("正在备份视频%s(%s)……%n", videoInfo.bvid, videoInfo.title);
         try {
-            boolean downloaded = downloadOrOverwriteVideoArchive(videoInfo,config.video,config.comment);
+            boolean downloaded = downloadOrOverwriteVideoArchive(videoInfo, config.video, config.comment);
             //System.out.printf("视频%s(%s)备份完成！%n", videoInfo.bvid, videoInfo.title);
             if (downloaded && contentUpdateThread != null) {
                 PG.content("正在添加更新任务……");
                 contentUpdateThread.addVideoUpdatePlan(biliUser.uid, videoInfo, config.video, config.update);
             }
             PG.remove();
-        } catch (Exception e){
-            PG.content("视频下载失败，因为："+e);
-            ExceptionRecorder.add(e,"下载视频"+videoInfo.bvid+"「"+videoInfo.title+"」时出错");
+        } catch (Exception e) {
+            PG.content("视频下载失败，因为：" + e);
+            ExceptionRecorder.add(e, "下载视频" + videoInfo.bvid + "「" + videoInfo.title + "」时出错");
             Thread.sleep(5000);
             PG.remove();
             throw e;
@@ -81,39 +82,16 @@ public class VideoBackupCall implements Comparable<VideoBackupCall>, KeyedCall<V
     public boolean downloadOrOverwriteVideoArchive(VideoInfo videoInfo, VideoDownloadConfig videoCfg, CommentDownloadConfig commentCfg)
             throws BiliBiliApiException, IOException {
         ArchiveVideoInfo archiveVideoInfo = videoInfoMapper.selectByBvid(videoInfo.bvid);
-
         if (archiveVideoInfo != null) {
             if (archiveVideoInfo.downloading != 0) {
-                //上次遇到问题，重新下载，不论原有配置优先级是否更高
-                VideoPageVersionList pageVersions = archiveVideoInfo.pagesVersionList;
-                //之前下载遇到问题，为了避免下载中断的视频文件被排除，下载视频应该完全下载
-                List<DownloadedVideoPage> downloadedPages = downloadVideoAndAdditions
-                        (videoInfo, null, videoCfg);
-                archiveVideoInfo.tags = videoDownloader.getVideoTags(getBvid());
-                archiveVideoInfo.totalCommentFloor = videoDownloader
-                        .downloadOrUpdateComment(videoInfo.aid, VideoDownloader.TYPE_VIDEO, commentCfg);
-                archiveVideoInfo.configId = config.id;
-                archiveVideoInfo.downloading = ArchiveVideoInfo.DOWNLOAD_STATE_OK;
-                if (pageVersions == null) {
-                    pageVersions = new VideoPageVersionList();
-                }
-                ArchiveVideoInfo.addToLastIfInconsistency(pageVersions, downloadedPages);
-                archiveVideoInfo.pagesVersionList = pageVersions;
+                //上次下载被中断，无论优先级多少，都进行下载或更新
+                downloadVideoAndAdditions(archiveVideoInfo, videoInfo, videoCfg, commentCfg);
                 archiveVideoInfo.communityUpdateTime = System.currentTimeMillis();
                 videoInfoMapper.update(archiveVideoInfo);
                 return true;
             } else if (checkIfOverwriteNeeded(archiveVideoInfo)) {
                 //上次的优比本次的先级低，覆盖下载
-                VideoPageVersionList pageVersions = archiveVideoInfo.pagesVersionList;
-                List<DownloadedVideoPage> downloadedPages = downloadVideoAndAdditions
-                        (videoInfo, pageVersions.get(pageVersions.size() - 1).pages, videoCfg);
-                archiveVideoInfo.tags = videoDownloader.getVideoTags(getBvid());
-                archiveVideoInfo.totalCommentFloor = videoDownloader
-                        .downloadOrUpdateComment(videoInfo.aid, VideoDownloader.TYPE_VIDEO, commentCfg);
-                archiveVideoInfo.configId = config.id;
-                archiveVideoInfo.downloading = ArchiveVideoInfo.DOWNLOAD_STATE_OK;
-                ArchiveVideoInfo.addToLastIfInconsistency(pageVersions, downloadedPages);
-                archiveVideoInfo.pagesVersionList = pageVersions;
+                downloadVideoAndAdditions(archiveVideoInfo, videoInfo, videoCfg, commentCfg);
                 archiveVideoInfo.communityUpdateTime = System.currentTimeMillis();
                 videoInfoMapper.update(archiveVideoInfo);
                 return true;
@@ -124,16 +102,7 @@ public class VideoBackupCall implements Comparable<VideoBackupCall>, KeyedCall<V
         }
         //全新下载
         archiveVideoInfo = insertNewDownloadingArcVideoInfo(videoInfo, config.id);
-        List<DownloadedVideoPage> videoPages = downloadVideoAndAdditions(videoInfo, null, videoCfg);
-        //保存视频TAG列表
-        archiveVideoInfo.tags = videoDownloader.getVideoTags(getBvid());
-        //下载评论
-        archiveVideoInfo.totalCommentFloor = videoDownloader
-                .downloadOrUpdateComment(videoInfo.aid, VideoDownloader.TYPE_VIDEO, commentCfg);
-        archiveVideoInfo.downloading = ArchiveVideoInfo.DOWNLOAD_STATE_OK;
-        VideoPageVersionList pageVersions = new VideoPageVersionList();
-        pageVersions.add(new VideoPageVersion(archiveVideoInfo.saveTime, videoPages));
-        archiveVideoInfo.pagesVersionList =  pageVersions;
+        downloadVideoAndAdditions(archiveVideoInfo, videoInfo, videoCfg, commentCfg);
         videoInfoMapper.update(archiveVideoInfo);
         return true;
     }
@@ -143,26 +112,65 @@ public class VideoBackupCall implements Comparable<VideoBackupCall>, KeyedCall<V
                 priorityManger.getVideoCfgPriority(config.id);
     }
 
-    private List<DownloadedVideoPage> downloadVideoAndAdditions
-            (VideoInfo videoInfo, @Nullable List<DownloadedVideoPage> videoPages,
-             VideoDownloadConfig video) throws IOException, BiliBiliApiException {
-
+    private void downloadVideoAndAdditions
+            (ArchiveVideoInfo archiveVideoInfo, VideoInfo videoInfo, VideoDownloadConfig video,
+             CommentDownloadConfig commentCfg) throws IOException, BiliBiliApiException {
         String bvid = videoInfo.bvid;
+        //更新视频下载状态为正在下载
+        videoInfoMapper.updateDownloading(bvid, ArchiveVideoInfo.DOWNLOAD_STATE_DOWNLOADING);
         //下载up主头像
-        videoDownloader.downloadUpAvatarIfNotExists(videoInfo.owner.face);
+        videoDownloader.downloadUpAvatarIfNotExists(archiveVideoInfo.ownerAvatarUrl);
+        //下载合作用户列表中的用户头像
+        videoDownloader.downloadStaffAvatarsIfNotExists(bvid,archiveVideoInfo.staff);
         //下载封面
-        videoDownloader.downloadCover(videoInfo.pic, bvid);
+        videoDownloader.downloadCoverIfNotExists(archiveVideoInfo.coverUrl, bvid);
+        //如果视频元信息与预期的不一致说明被修改了，将新的信息添加到修改记录里，不改变当前视频的元数据
+        VideoTagList videoTags = videoDownloader.getVideoTags(bvid);
+        if (archiveVideoInfo.tags == null) {
+            archiveVideoInfo.tags = videoTags;
+        }
+
+        MetadataChangeList metadataChanges = archiveVideoInfo.metadataChanges;
+        if (metadataChanges.size() > 0) {
+            //若元数据日志与上个版本发生变化，新增到修改记录里
+            VideoMetadataLog log = metadataChanges.get(metadataChanges.size() - 1);
+            if (!Objects.equals(log.title, videoInfo.title) || !Objects.equals(log.desc, videoInfo.desc)
+                    || !Objects.equals(MiscUtils.getEndPathForHttpUrl(log.coverUrl),
+                    MiscUtils.getEndPathForHttpUrl(videoInfo.pic))) {
+                videoDownloader.downloadCoverToChangedIfNotExists(videoInfo.pic,bvid);
+                metadataChanges.add(new VideoMetadataLog(videoInfo.title, videoInfo.desc, videoInfo.pic, videoTags,
+                        System.currentTimeMillis()));
+            }
+        } else {
+            if (!Objects.equals(archiveVideoInfo.title, videoInfo.title)
+                    || !Objects.equals(archiveVideoInfo.desc, videoInfo.desc)
+                    || !Objects.equals(MiscUtils.getEndPathForHttpUrl(archiveVideoInfo.coverUrl),
+                    MiscUtils.getEndPathForHttpUrl(videoInfo.pic))) {
+                videoDownloader.downloadCoverToChangedIfNotExists(videoInfo.pic,bvid);
+                metadataChanges.add(new VideoMetadataLog(videoInfo.title, videoInfo.desc, videoInfo.pic, videoTags,
+                        System.currentTimeMillis()));
+            }
+        }
+        List<DownloadedVideoPage> latestPages = archiveVideoInfo.latestPages();
         //下载视频
         UserContext vContext = userContext;
         //如果用户不是大会员，且设置了公共大会员账号，视频部分将由公共大会员账号下载
-        if (!biliUser.currentTimeIsVip() || userContext.getPublicVipUserContext() != null){
+        if (!biliUser.currentTimeIsVip() || userContext.getPublicVipUserContext() != null) {
             vContext = userContext.getPublicVipUserContext();
         }
-        List<DownloadedVideoPage> downloadedVideoPages = vContext.videoDownloader.downloadOrUpdateVideo(videoInfo, videoPages,
+        List<DownloadedVideoPage> downloadedPages = vContext.videoDownloader.downloadOrUpdateVideo(videoInfo, latestPages,
                 video.clarity, video.codecId, 320 * 1024, vContext.biliUser.currentTimeIsVip());
         //下载弹幕
         videoDownloader.downloadOrUpdateDanmaku(videoInfo);
-        return downloadedVideoPages;
+        //保存视频标签信息
+
+        //下载评论
+        archiveVideoInfo.totalCommentFloor = videoDownloader
+                .downloadOrUpdateComment(videoInfo.aid, CommentDownloader.TYPE_VIDEO, commentCfg);
+
+        archiveVideoInfo.configId = config.id;
+        archiveVideoInfo.downloading = ArchiveVideoInfo.DOWNLOAD_STATE_OK;
+        archiveVideoInfo.addToPageVersionsIfInconsistency(downloadedPages);
     }
 
     public ArchiveVideoInfo insertNewDownloadingArcVideoInfo(VideoInfo videoInfo, int config_id) {
@@ -188,7 +196,7 @@ public class VideoBackupCall implements Comparable<VideoBackupCall>, KeyedCall<V
         return videoInfo.bvid;
     }
 
-    public String getTitle(){
+    public String getTitle() {
         return videoInfo.title;
     }
 }

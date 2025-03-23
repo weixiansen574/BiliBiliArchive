@@ -212,7 +212,9 @@ function update() {
   color: white;
   padding: 2px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 12px;  
+  height: 14px;
+  line-height: 14px;
 }
 
 .non-vip{

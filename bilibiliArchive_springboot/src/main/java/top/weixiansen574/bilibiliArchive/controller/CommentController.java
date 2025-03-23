@@ -35,14 +35,18 @@ public class CommentController {
 
     @GetMapping("avatars/{fileName}")
     public ResponseEntity<byte[]> getAvatar(@PathVariable String fileName){
-        byte[] avatarData = avatarMapper.selectByName(fileName).data;
-        if (avatarData == null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        if (avatarMapper.checkExists(fileName)) {
+            byte[] avatarData = avatarMapper.selectByName(fileName).data;
+            if (avatarData == null){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "image/avif")
+                    .cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS))
+                    .body(avatarData);
+        } else {
+            return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, "image/avif")
-                .cacheControl(CacheControl.maxAge(365, TimeUnit.DAYS))
-                .body(avatarData);
     }
 
     @GetMapping("main")

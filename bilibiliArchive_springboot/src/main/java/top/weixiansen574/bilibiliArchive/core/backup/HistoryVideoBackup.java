@@ -8,6 +8,8 @@ import top.weixiansen574.bilibiliArchive.bean.videoinfo.HistoryVideoInfo;
 import top.weixiansen574.bilibiliArchive.core.ContentUpdateThread;
 import top.weixiansen574.bilibiliArchive.core.PriorityManger;
 import top.weixiansen574.bilibiliArchive.core.UserContext;
+import top.weixiansen574.bilibiliArchive.core.biliApis.BiliApiService;
+import top.weixiansen574.bilibiliArchive.core.biliApis.model.SearchResponse;
 import top.weixiansen574.bilibiliArchive.core.operation.progress.PG;
 import top.weixiansen574.bilibiliArchive.core.task.VideoBackupCall;
 import top.weixiansen574.bilibiliArchive.core.biliApis.BiliBiliApiException;
@@ -115,17 +117,30 @@ public class HistoryVideoBackup extends VideoBackup {
         for (HistoryVideoInfo video : pendingDeleteVideos) {
             String bvid = video.bvid;
             //删除掉未失效的视频，保留失效的
-            MiscUtils.getVideoInfoOrChangeState(userContext, video);
+            VideoInfo videoInfo = MiscUtils.getVideoInfoOrChangeState(userContext, video);
             if (!video.state.equals(ArchiveVideoInfo.STATE_NORMAL)){
-                PG.contentAndPrintf("发现历史记录视频已失效：[%s][%s]", bvid, video.title);
+                if (video.state.equals(ArchiveVideoInfo.STATE_SEARCH_BAN)){
+                    PG.contentAndPrintf("发现历史记录视频被禁止搜索，保留存档：[%s][%s]", bvid, video.title);
+                } else {
+                    PG.contentAndPrintf("发现历史记录视频已失效，保留存档：[%s][%s]", bvid, video.title);
+                }
                 videoInfoMapper.update(video);
             } else {
-                PG.contentAndPrintf("正在删除历史记录视频：%s「%s」",bvid,video.title);
-                videoHistoryMapper.deleteByPrimaryKey(his.uid, bvid);
-                if (archiveDeleteService.deleteVideoArchiveIfNotRef(bvid)){
-                    PG.contentAndPrintf("已删除历史记录视频及存档：%s「%s」",bvid,video.title);
+                assert videoInfo != null;
+                String trySearch = trySearch(biliApiService,bvid, videoInfo.title);
+                //TODO 加个设置选项
+                if (Objects.equals(trySearch, ArchiveVideoInfo.TRY_SEARCH_SUCCESS)){
+                    PG.contentAndPrintf("正在删除历史记录视频：%s「%s」",bvid,video.title);
+                    videoHistoryMapper.deleteByPrimaryKey(his.uid, bvid);
+                    if (archiveDeleteService.deleteVideoArchiveIfNotRef(bvid)){
+                        PG.contentAndPrintf("已删除历史记录视频及存档：%s「%s」",bvid,video.title);
+                    } else {
+                        PG.contentAndPrintf("已删除历史记录视频但存档保留（因为其他备份项在使用）：%s「%s」",bvid,video.title);
+                    }
                 } else {
-                    PG.contentAndPrintf("已删除历史记录视频但存档保留（因为其他备份项在使用）：%s「%s」",bvid,video.title);
+                    PG.contentAndPrintf("历史记录视频无法被搜索，保留存档：%s「%s」",bvid,video.title);
+                    video.trySearch = trySearch;
+                    videoInfoMapper.update(video);
                 }
             }
         }
@@ -180,7 +195,7 @@ public class HistoryVideoBackup extends VideoBackup {
                     String coverUrl = historyItem.cover;
                     PG.contentAndPrintf("正在为收藏夹补充失效且未存档视频的标题、封面……");
                     videoInfoMapper.supplementaryFailedVideoInfo(bvid, historyItem.title+"[由历史记录补充]", historyItem.tag_name, coverUrl);
-                    userContext.videoDownloader.downloadCover(coverUrl, bvid);
+                    userContext.videoDownloader.downloadCoverIfNotExists(coverUrl, bvid);
                 }
             } else {
                 throw new RuntimeException("无法判断视频是否失效：message=" + resp.message + " code=" + resp.code);
@@ -210,6 +225,54 @@ public class HistoryVideoBackup extends VideoBackup {
                 return newHistoryItemList;
             }
             page = biliApiService.getVideoHistories(20, page.cursor.max, page.cursor.view_at).success();
+        }
+    }
+
+    public static String trySearch(BiliApiService biliApiService,String bvid, String title) throws BiliBiliApiException, IOException {
+        int page = 1;
+        while (true){
+            GeneralResponse<SearchResponse> response = biliApiService.search(title, page).exe();
+            //被禁止搜索，例如："爱猫TV"
+            if (response.code == -111){
+                return ArchiveVideoInfo.TRY_SEARCH_BAN_WORLD;
+            } else if (response.isSuccess()){
+                //搜索视频，如果搜索到了同一bv号的视频则表明它正常，如果当前搜索结果页中有标题完全一致但是bv号一致就翻下一页
+                SearchResponse searchResponse = response.data;
+                boolean toReturn = true;
+                boolean hasVideo = false;//主要判断搜索结果是否为空，如果空的，就停止翻页了
+                for (SearchResponse.Result result : searchResponse.result) {
+                    if (result.result_type.equals("video")){
+                        if (result.data == null || result.data.isEmpty()){
+                            return ArchiveVideoInfo.TRY_SEARCH_NO_RESULT;
+                        }
+                        hasVideo = true;
+                        for (SearchResponse.VideoItem videoItem : result.data) {
+                            if (Objects.equals(videoItem.bvid, bvid)){
+                                return ArchiveVideoInfo.TRY_SEARCH_SUCCESS;
+                            }
+                            //移除高亮用处的HTML标签
+                            String plainText = videoItem.title.replaceAll("<[^>]+>", "");
+                            if (title.equals(plainText)){
+                                toReturn = false;
+                            }
+                        }
+                    }
+                }
+                if (!hasVideo){
+                    return ArchiveVideoInfo.TRY_SEARCH_NO_RESULT;
+                }
+                if (toReturn || page >= searchResponse.numPages){
+                    return ArchiveVideoInfo.TRY_SEARCH_NO_RESULT;
+                }
+                if (page >= 50){
+                    System.out.println("警告！搜索翻页已达到上限50页，这每一页都有与此视频标题完全一致的结果，但都不是要找的视频，算视频没有被禁止搜索吧。\n"+
+                            "要找的视频：["+bvid+"]["+title+"]");
+                    return ArchiveVideoInfo.TRY_SEARCH_SUCCESS;
+                }
+                page ++;
+            } else {
+                throw new BiliBiliApiException(response,"在B站搜索视频时发生错误");
+            }
         }
     }
 

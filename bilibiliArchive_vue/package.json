@@ -15,6 +15,7 @@
     "artplayer-plugin-danmuku": "^5.1.4",
     "axios": "^1.7.4",
     "default-passive-events": "^2.0.0",
+    "echarts": "^5.6.0",
     "element-plus": "^2.8.0",
     "express": "^4.19.2",
     "hevue-img-preview": "^6.1.0",
@@ -24,15 +25,14 @@
     "nodemon": "^3.1.4",
     "panzoom": "^9.4.3",
     "pinia": "^2.2.8",
+    "save": "^2.9.0",
     "vue": "^3.4.35",
     "vue-mermaid-render": "^0.1.4",
     "vue-router": "^4.4.3",
-    "vuetify": "^3.7.5",
     "yarn": "^1.22.22"
   },
   "devDependencies": {
-    "@nuxtjs/vuetify": "^0.1.1",
     "@vitejs/plugin-vue": "^5.1.2",
-    "vite": "^5.4.0"
+    "vite": "^6.2.2"
   }
 }

@@ -1,11 +1,13 @@
 package top.weixiansen574.bilibiliArchive.core.backup;
 
 import top.weixiansen574.bilibiliArchive.bean.backups.BackupFav;
+import top.weixiansen574.bilibiliArchive.bean.list.MetadataChangeList;
 import top.weixiansen574.bilibiliArchive.bean.videoinfo.ArchiveVideoInfo;
 import top.weixiansen574.bilibiliArchive.bean.videoinfo.FavoriteVideoInfo;
 import top.weixiansen574.bilibiliArchive.core.ContentUpdateThread;
 import top.weixiansen574.bilibiliArchive.core.PriorityManger;
 import top.weixiansen574.bilibiliArchive.core.UserContext;
+import top.weixiansen574.bilibiliArchive.core.biliApis.GeneralResponse;
 import top.weixiansen574.bilibiliArchive.core.operation.progress.PG;
 import top.weixiansen574.bilibiliArchive.core.task.VideoBackupCall;
 import top.weixiansen574.bilibiliArchive.core.biliApis.BiliBiliApiException;
@@ -69,8 +71,8 @@ public class FavVideoBackup extends VideoBackup {
                     return result;
                 }
                 result.add(new PendingDownFavoriteVideo(
-                        videoItem,
-                        biliApiService.getVideoInfoByBvid(videoItem.bvid).success(),
+                        videoItem, videoItem.attr == STATUS_NORMAL ?
+                        biliApiService.getVideoInfoByBvid(videoItem.bvid).success() : null,
                         videoFavoriteMapper.checkExists(fav.favId, videoItem.bvid)));
             }
         }
@@ -84,8 +86,7 @@ public class FavVideoBackup extends VideoBackup {
     private List<VideoBackupCall> buildVideoBackupCalls() {
         List<VideoBackupCall> backupCalls = new LinkedList<>();
         for (PendingDownFavoriteVideo video : pendingVideos) {
-            if (video.favVideoInfo.attr == STATUS_NORMAL &&
-                    !videoFavoriteMapper.checkExists(fav.favId, video.videoInfo.bvid)) {
+            if (video.favVideoInfo.attr == STATUS_NORMAL && !video.existsInDb) {
                 backupCalls.add(new VideoBackupCall(
                         video.videoInfo, userContext, priorityManger, updateThread, videoBackupConfig));
             }
@@ -156,6 +157,7 @@ public class FavVideoBackup extends VideoBackup {
         archiveInfo.configId = 0;
         archiveInfo.saveTime = System.currentTimeMillis();
         archiveInfo.communityUpdateTime = System.currentTimeMillis();
+        archiveInfo.metadataChanges = new MetadataChangeList();
 
         videoInfoMapper.insert(archiveInfo);
         videoFavoriteMapper.insert(fav.favId, videoInfo.bvid, videoInfo.id, videoInfo.fav_time, false);

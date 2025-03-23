@@ -1,5 +1,6 @@
 package top.weixiansen574.bilibiliArchive.core.biliApis;
 
+import com.alibaba.fastjson2.JSONObject;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Query;
@@ -75,7 +76,7 @@ public interface BiliApiService {
     getCommentPageForMainApi(@Query("mode") int mode, @Query("pagination_str") String pagination_str,
                              @Query("oid") long oid, @Query("type") int type, @Query("ps") int ps);
 
-    @EnableWbi
+    @InjectWbi
     @GET("/x/v2/reply/wbi/main")
     ApiCall<GeneralResponse<MainApiCommentPage>,MainApiCommentPage> getCommentPageForWbiMainApi(@Query("mode") int mode, @Query("pagination_str") String pagination_str,
     @Query("oid") long oid, @Query("type") int type);
@@ -118,7 +119,7 @@ public interface BiliApiService {
     ApiCall<GeneralResponse<VideoPlayerInfo>, VideoPlayerInfo>
     getVideoPlayerInfo(@Query("aid") long aid, @Query("cid") long cid);
 
-    @EnableWbi
+    @InjectWbi
     @GET("/x/player/wbi/v2")
     ApiCall<GeneralResponse<VideoPlayerInfo>, VideoPlayerInfo>
     getVideoPlayerInfoByWbi(@Query("aid") long aid, @Query("cid") long cid);
@@ -126,7 +127,7 @@ public interface BiliApiService {
     @GET("/x/web-interface/nav")
     ApiCall<GeneralResponse<Nav>, Nav> getUserNav();
 
-    @EnableWbi
+    @InjectWbi
     @GET("/x/space/wbi/arc/search")
     ApiCall<GeneralResponse<UploaderVideoPage>, UploaderVideoPage>
     getUploaderVideoPage(@Header("referer") String referer, @Query("mid") long mid, @Query("pn") int pn);
@@ -148,7 +149,14 @@ public interface BiliApiService {
 
     @GET("/x/emote/user/panel/web?business=reply")
     ApiCall<GeneralResponse<Emotes>,Emotes> getEmotes();
-    
+
+    @GET("/x/v2/dm/history/index?type=1")
+    ApiCall<GeneralResponse<List<String>>,List<String>> getHistoryDanmakuDates(@Query("oid") long oid,@Query("month") String month);
+
+    @InjectWbi
+    @GET("/x/web-interface/wbi/search/all/v2")
+    ApiCall<GeneralResponse<SearchResponse>,SearchResponse> search(@Query("keyword") String keyword,@Query("page") int page);
+
 /*    @EnableWbi
     @GET("/x/space/wbi/acc/info")
     ApiCall<GeneralResponse<UserProfile>,UserProfile> getUserProfile(@Header("referer") String referer,@Query("mid") long mid);*/

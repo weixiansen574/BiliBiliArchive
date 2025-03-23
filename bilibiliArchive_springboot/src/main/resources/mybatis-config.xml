@@ -16,6 +16,8 @@
         <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.VideoContentUpdateConfigList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
         <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.VideoPageVersionList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
         <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.VideoTagList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.MetadataChangeList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
+        <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.list.StaffList" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
 
         <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.config.VideoDownloadConfig" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>
         <typeHandler javaType="top.weixiansen574.bilibiliArchive.bean.config.CommentDownloadConfig" handler="top.weixiansen574.bilibiliArchive.config.JsonObjectTypeHandler"/>

@@ -1,6 +1,7 @@
 package top.weixiansen574.bilibiliArchive.core.biliApis.model;
 
 import com.alibaba.fastjson.JSON;
+import top.weixiansen574.bilibiliArchive.bean.list.StaffList;
 
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class VideoInfo {
     public int state;
     public int duration;
     public Owner owner;
+    public List<Staff> staff;
     public Stat stat;
     public String dynamic;
     public long cid;
@@ -101,6 +103,13 @@ public class VideoInfo {
         public int is_deleted;
         public int in_reg_audit;
         public int is_senior_member;
+    }
+
+    public static class Staff {
+        public long mid;
+        public String title;
+        public String name;
+        public String face;
     }
 
 }

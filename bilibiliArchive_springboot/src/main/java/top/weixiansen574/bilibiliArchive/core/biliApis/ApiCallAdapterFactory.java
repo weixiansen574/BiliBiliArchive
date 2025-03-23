@@ -23,7 +23,7 @@ public class ApiCallAdapterFactory extends CallAdapter.Factory {
 
         boolean hasWbiAnnotation = false;
         for (Annotation annotation : annotations) {
-            if (annotation instanceof EnableWbi) {
+            if (annotation instanceof InjectWbi) {
                 hasWbiAnnotation = true;
                 break;
             }

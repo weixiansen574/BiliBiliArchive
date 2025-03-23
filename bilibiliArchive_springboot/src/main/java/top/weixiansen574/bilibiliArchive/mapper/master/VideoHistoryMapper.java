@@ -36,7 +36,10 @@ public interface VideoHistoryMapper {
             SELECT vh.*, vi.*
             FROM videos_history vh
             JOIN video_infos vi ON vh.bvid = vi.bvid
-            WHERE uid = #{uid} AND vh.view_at < #{time} AND vi.state = 'NORMAL'
+            WHERE uid = #{uid}
+                AND vh.view_at < #{time}
+                AND vi.state = 'NORMAL'
+                AND (vi.try_search = 'SUCCESS' OR vi.try_search IS NULL)
             ORDER BY vh.view_at DESC
             """)
     List<HistoryVideoInfo> selectNoFaiVideosBeforeTime(@Param("uid") long uid,@Param("time") long time);
@@ -55,6 +58,7 @@ public interface VideoHistoryMapper {
             FROM videos_history vh
             JOIN video_infos vi ON vh.bvid = vi.bvid
             WHERE uid = #{uid} AND vi.state = 'NORMAL'
+            AND (vi.try_search = 'SUCCESS' OR vi.try_search IS NULL)
             ORDER BY vh.view_at DESC
             LIMIT -1 OFFSET #{offset}
             """)
@@ -65,6 +69,7 @@ public interface VideoHistoryMapper {
             FROM videos_history vh
             JOIN video_infos vi ON vh.bvid = vi.bvid
             WHERE uid = #{uid} AND vi.state = 'NORMAL'
+            AND (vi.try_search = 'SUCCESS' OR vi.try_search IS NULL)
             """)
     Cursor<HistoryVideoInfo> selectAllNoFaiByUid(long uid);
 

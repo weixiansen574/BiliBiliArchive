@@ -2,6 +2,7 @@ package top.weixiansen574.bilibiliArchive.config;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
@@ -13,6 +14,10 @@ import java.sql.SQLException;
 public class JsonObjectTypeHandler<T> extends BaseTypeHandler<T> {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final Class<T> type;
+
+    static {
+        OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     public JsonObjectTypeHandler(Class<T> type) {
         if (type == null) {

@@ -166,7 +166,7 @@ public class Danmaku {
         iElement.appendChild(element);
     }
 
-    public static List<Danmaku> merge(List<Danmaku> dm1, List<Danmaku> dm2) {
+    public static List<Danmaku>  merge(List<Danmaku> dm1, List<Danmaku> dm2) {
         return new ArrayList<>(Stream.concat(dm1.stream(), dm2.stream())
                 .collect(Collectors.toMap(Danmaku::getId, danmaku -> danmaku, (existing, replacement) -> existing))
                 .values());

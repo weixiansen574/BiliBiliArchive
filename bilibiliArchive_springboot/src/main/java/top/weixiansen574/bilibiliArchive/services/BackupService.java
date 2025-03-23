@@ -3,7 +3,6 @@ package top.weixiansen574.bilibiliArchive.services;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.ResponseBody;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -318,8 +317,12 @@ public class BackupService {
         return contentUpdatePlanMapper.selectVideoPlansAscPage(offset, size,bvid);
     }
 
+    public synchronized int removeAllVideoUpdatePlans(){
+        return contentUpdatePlanMapper.deleteAllVideoUpdatePlans();
+    }
+
     public synchronized int removeVideoUpdatePlansByBvid(String bvid){
-        int count = contentUpdatePlanMapper.deleteVideoUpdatePlanByBvid(bvid);
+        int count = contentUpdatePlanMapper.deleteVideoUpdatePlansByBvid(bvid);
         if (updateThread != null) {
             updateThread.interrupt();
         }

@@ -5,6 +5,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import top.weixiansen574.bilibiliArchive.core.biliApis.BiliApiService;
+import top.weixiansen574.bilibiliArchive.core.biliApis.model.VideoInfo;
 import top.weixiansen574.bilibiliArchive.core.http.ResponseNotSuccessfulException;
 import top.weixiansen574.bilibiliArchive.core.operation.progress.PG;
 import top.weixiansen574.bilibiliArchive.core.util.MiscUtils;
@@ -14,6 +15,7 @@ import top.weixiansen574.bilibiliArchive.util.FileUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public abstract class ContentDownloader {
     public File cachePath;
@@ -42,6 +44,8 @@ public abstract class ContentDownloader {
             }
         }
     }
+
+
 
     public void downloadContentAndRetry(Request request,File file,int tryCount) throws IOException {
         for (int i = 1; i <= tryCount; i++) {

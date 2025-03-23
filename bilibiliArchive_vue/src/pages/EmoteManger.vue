@@ -6,7 +6,7 @@
     <div class="card container" v-loading="loading">
       <div class="operate">
         <div class="operate-item">
-          <el-input v-model="searchQuery" placeholder="输入表情名称进行搜索" />
+          <el-input v-model="searchQuery" @keyup.enter="handleSearch" placeholder="输入表情名称进行搜索" />
           <el-button @click="handleSearch" type="primary" style="margin-left: 8px;">搜索</el-button>
         </div>
         <div class="operate-item">

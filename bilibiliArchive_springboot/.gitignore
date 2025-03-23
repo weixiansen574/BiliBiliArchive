@@ -6,6 +6,9 @@ target/
 
 src/main/resources/static/
 
+### 个人的一些测试 ###
+src/test/java/top/weixiansen574/bilibiliArchive/privacy
+
 ### STS ###
 .apt_generated
 .classpath

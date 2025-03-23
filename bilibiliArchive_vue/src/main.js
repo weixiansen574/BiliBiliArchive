@@ -19,9 +19,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Vuetify
 //import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+// import { createVuetify } from 'vuetify'
+// import * as components from 'vuetify/components'
+// import * as directives from 'vuetify/directives'
 
 //去除谷歌浏览器的scroll、wheel等事件警告
 (function () {
@@ -38,10 +38,10 @@ import * as directives from 'vuetify/directives'
   }
 }())
 
-const vuetify = createVuetify({
-  components,
-  directives,
-})
+// const vuetify = createVuetify({
+//   components,
+//   directives,
+// })
 
 var pinia = createPinia();
 
@@ -54,6 +54,6 @@ app.use(ElementPlus, {
 
 app.use(pinia);
 app.use(router);
-app.use(vuetify);
+//app.use(vuetify);
 app.use(hevueImgPreview);
 app.mount('#app')

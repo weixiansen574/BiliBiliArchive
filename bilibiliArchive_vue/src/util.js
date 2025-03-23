@@ -67,6 +67,10 @@ export function getBCUploaderAvatarUrl(url) {
   return `/files/backup-config-avatars/uploader/${getFileName(url)}`;
 }
 
+export function getChangedCoverUrl(bvid,bUrl){
+  return `/files/archives/videos/${bvid}/cover/${getFileName(bUrl)}`;
+}
+
 export function closeDrawer() {
   new mdui.Drawer('#drawer').close();
 }

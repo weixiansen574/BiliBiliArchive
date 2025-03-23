@@ -4,8 +4,8 @@
       <a href="javascript:" class="mdui-btn mdui-btn-icon" mdui-drawer="{target: '#drawer'}">
         <i class="mdui-icon material-icons">menu</i>
       </a>
-      <a href="javascript:" class="mdui-typo-headline">哔哩存档姬</a>
-      <!-- <a href="javascript:" class="mdui-typo-title">首页</a> -->
+      <a href="javascript:;" class="mdui-typo-headline mdui-hidden-xs">哔哩存档姬</a>
+      <a href="javascript:;" class="mdui-typo-title">{{$route.meta.title}}</a>
       <div class="mdui-toolbar-spacer"></div>
     </div>
   </div>
@@ -14,7 +14,6 @@
 </template>
 
 <script setup>
-
 import Drawer from "./components/Drawer.vue"
 </script>
 <style>

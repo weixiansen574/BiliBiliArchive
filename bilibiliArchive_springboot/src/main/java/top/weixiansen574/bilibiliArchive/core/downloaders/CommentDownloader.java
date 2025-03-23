@@ -83,17 +83,26 @@ public class CommentDownloader extends ContentDownloader implements CommentDownl
         } else {
             floor = page.cursor.prev - 1;
         }
-        switch (config.mode) {
-            case CommentDownloadConfig.MODE_ALL -> normalDownload(page, oid, type, floor != -1 ? MODE_SORT_TIME : MODE_SORT_HOT,
-                    CommentDownloadConfig.REPLY_MODE_ALL, -1, -1, 0, savedRootCount, savedReplyCount);
-            case CommentDownloadConfig.MODE_HOT -> normalDownload(page, oid, type, MODE_SORT_HOT, config.replyMode, config.replyLimit,
-                    config.rootLimit, 0, savedRootCount, savedReplyCount);
-            case CommentDownloadConfig.MODE_LATEST_FIRST -> {
-                ArchiveComment latest = commentMapper.selectLatestPostedRootComment(oid, type);
-                normalDownload(page, oid, type, MODE_SORT_TIME, CommentDownloadConfig.REPLY_MODE_ALL, -1, -1,
-                        latest != null ? latest.ctime : 0, savedRootCount, savedReplyCount);
+        try {
+            switch (config.mode) {
+                case CommentDownloadConfig.MODE_ALL -> normalDownload(page, oid, type, floor != -1 ? MODE_SORT_TIME : MODE_SORT_HOT,
+                        CommentDownloadConfig.REPLY_MODE_ALL, -1, -1, 0, savedRootCount, savedReplyCount);
+                case CommentDownloadConfig.MODE_HOT -> normalDownload(page, oid, type, MODE_SORT_HOT, config.replyMode, config.replyLimit,
+                        config.rootLimit, 0, savedRootCount, savedReplyCount);
+                case CommentDownloadConfig.MODE_LATEST_FIRST -> {
+                    ArchiveComment latest = commentMapper.selectLatestPostedRootComment(oid, type);
+                    normalDownload(page, oid, type, MODE_SORT_TIME, CommentDownloadConfig.REPLY_MODE_ALL, -1, -1,
+                            latest != null ? latest.ctime : 0, savedRootCount, savedReplyCount);
+                }
+                case CommentDownloadConfig.MODE_FLOOR_SNIFFER -> sniffFloorDownload(page, floor,oid, type);
             }
-            case CommentDownloadConfig.MODE_FLOOR_SNIFFER -> sniffFloorDownload(page, floor,oid, type);
+        } catch (BiliBiliApiException e){
+            if (e.code == 12002){
+                PG.content("下载评论的途中评论区关闭，完成下载");
+                MiscUtils.sleepNoException(3000);
+            } else {
+                throw e;
+            }
         }
         return floor;
     }

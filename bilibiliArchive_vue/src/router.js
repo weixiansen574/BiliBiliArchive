@@ -17,6 +17,7 @@ const routes = [{
 },
 {
   path: "/video/:bvid",
+  meta:{title:"视频"},
   component: () =>
     import("./components/VideoPlay.vue"), //import("./components/VideoPlay.vue")
   props: true,
@@ -43,12 +44,17 @@ const routes = [{
   path: "/update-plans",
   name: "update-plans",
   meta: { title: '更新计划' },
-  component:() => import("./pages/VideoBackupPlans.vue")
-},{
-  path:"/emote-manger",
-  name:"emote-manger",
+  component: () => import("./pages/VideoUpdatePlans.vue")
+}, {
+  path: "/emote-manger",
+  name: "emote-manger",
   meta: { title: '评论表情管理' },
-  component:() => import("./pages/EmoteManger.vue")
+  component: () => import("./pages/EmoteManger.vue")
+}, {
+  path: "/video-search",
+  name: "video-search",
+  meta: { title: "视频搜索" },
+  component: () => import("./pages/VideoSearch.vue")
 },
 {
   path: "/settings",
@@ -142,7 +148,7 @@ const routes = [{
   path: "/user/add",
   component: () =>
     import("./pages/UserAdd.vue"),
-    meta: { title: '添加用户' },
+  meta: { title: '添加用户' },
   children: [{
     path: "",
     name: "add-user",
@@ -172,7 +178,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.meta.title) {
-    document.title = to.meta.title
+    document.title = to.meta.title+"_哔哩存档姬"
   } else {
     document.title = "哔哩存档姬"
   }

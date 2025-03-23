@@ -77,8 +77,6 @@ public class MiscUtils {
         return url.replaceAll("@.*", "");
     }
 
-
-
     public static VideoInfo getVideoInfoOrChangeState(UserContext userContext, ArchiveVideoInfo videoInfo) throws IOException, BiliBiliApiException {
         String bvid = videoInfo.bvid;
         BiliApiService biliApiService = userContext.biliApiService;

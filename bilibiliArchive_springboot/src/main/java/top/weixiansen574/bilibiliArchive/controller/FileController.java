@@ -41,6 +41,17 @@ public class FileController {
         return downloadFile(fileService.newCoverFile(bvid),download);
     }
 
+    @GetMapping("archives/videos/{bvid:.+}/cover/{fileName:.+}")
+    public ResponseEntity<InputStreamResource> getChangedVideoCover(@PathVariable String bvid,@PathVariable String fileName,@RequestParam(defaultValue = "false") boolean download){
+        return downloadFile(fileService.newChangedCoverFile(bvid,fileName),download);
+    }
+
+    @GetMapping("archives/videos/{bvid:.+}/staff-avatars/{fileName:.+}")
+    public ResponseEntity<InputStreamResource> getStaffAvatar(@PathVariable String bvid,@PathVariable String fileName,
+                                                              @RequestParam(defaultValue = "false") boolean download){
+        return downloadFile(fileService.newStaffAvatarFile(bvid,fileName),download);
+    }
+
     @GetMapping(value = "archives/videos/{bvid:.+}/{cid:.+}/video", produces = "video/webm")
     public void getVideoVideo(@RequestHeader HttpHeaders headers, HttpServletResponse response,
                               @PathVariable String bvid, @PathVariable long cid,

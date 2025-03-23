@@ -4,7 +4,6 @@ import top.weixiansen574.bilibiliArchive.bean.config.VideoContentUpdateConfig;
 import top.weixiansen574.bilibiliArchive.bean.config.VideoDownloadConfig;
 import top.weixiansen574.bilibiliArchive.bean.contentupdate.VideoUpdatePlan;
 import top.weixiansen574.bilibiliArchive.core.biliApis.model.VideoInfo;
-import top.weixiansen574.bilibiliArchive.core.downloaders.CommentDownloader;
 import top.weixiansen574.bilibiliArchive.core.operation.progress.PG;
 import top.weixiansen574.bilibiliArchive.core.operation.progress.ProgressBar;
 import top.weixiansen574.bilibiliArchive.core.task.KeyedThreadPool;
@@ -80,7 +79,7 @@ public class ContentUpdateThread extends Thread {
     }
 
     public synchronized void removeVideoUpdatePlans(String bvid) {
-        mapper.deleteVideoUpdatePlanByBvid(bvid);
+        mapper.deleteVideoUpdatePlansByBvid(bvid);
     }
 
     public void addVideoUpdatePlan(Long uid,String bvid,Long avid,String title,long startTime,VideoDownloadConfig videoConfig, List<VideoContentUpdateConfig> updateConfigs){
@@ -88,7 +87,7 @@ public class ContentUpdateThread extends Thread {
             return;
         }
         //清理掉bvid相重的更新计划（优先级覆盖时避免之前的任务窜扰）
-        mapper.deleteVideoUpdatePlanByBvid(bvid);
+        mapper.deleteVideoUpdatePlansByBvid(bvid);
         VideoUpdatePlan plan = new VideoUpdatePlan();
         plan.uid = uid;
         plan.bvid = bvid;

@@ -32,10 +32,13 @@ public interface ContentUpdatePlanMapper {
 
 
     @Delete("DELETE FROM video_update_plans WHERE bvid = #{bvid}")
-    int deleteVideoUpdatePlanByBvid(@Param("bvid") String bvid);
+    int deleteVideoUpdatePlansByBvid(@Param("bvid") String bvid);
 
     @Delete("DELETE FROM video_update_plans WHERE id = #{id}")
     int deleteVideoUpdatePlanById(@Param("id") long id);
+
+    @Delete("DELETE FROM video_update_plans")
+    int deleteAllVideoUpdatePlans();
 
     @Select("select COUNT(1) from video_update_plans where bvid = #{bvid}")
     boolean checkVideoHasUpdatePlan(String bvid);

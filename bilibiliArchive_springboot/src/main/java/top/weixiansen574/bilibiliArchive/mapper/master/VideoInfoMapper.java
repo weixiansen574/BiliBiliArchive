@@ -10,16 +10,16 @@ import java.util.List;
 public interface VideoInfoMapper {
     @Insert("""
             INSERT INTO video_infos (
-                bvid, avid, title, `desc`,duration,owner_mid, owner_name, owner_avatar_url,
-                `view`, danmaku, favorite, coin, `like`, share, reply, tname, ctime,
+                bvid, avid, title, `desc`,duration,owner_mid, owner_name, owner_avatar_url, staff,
+                `view`, danmaku, favorite, coin, `like`, share, reply, tname, ctime, pubdate,
                 cover_url, tags, pages_version_list, state, downloading, save_time, community_update_time,
-                config_id,total_comment_floor
+                config_id,total_comment_floor,metadata_changes
             ) VALUES (
                 #{bvid}, #{avid}, #{title},#{desc},#{duration},#{ownerMid}, #{ownerName},
-                #{ownerAvatarUrl}, #{view}, #{danmaku}, #{favorite}, #{coin},
-                #{like}, #{share}, #{reply}, #{tname}, #{ctime}, #{coverUrl}, #{tags}, #{pagesVersionList},
+                #{ownerAvatarUrl}, #{staff}, #{view}, #{danmaku}, #{favorite}, #{coin},
+                #{like}, #{share}, #{reply}, #{tname}, #{ctime},#{pubdate}, #{coverUrl}, #{tags}, #{pagesVersionList},
                 #{state}, #{downloading}, #{saveTime}, #{communityUpdateTime},
-                #{configId},#{totalCommentFloor}
+                #{configId},#{totalCommentFloor},#{metadataChanges}
             )
             """)
     void insert(ArchiveVideoInfo videoInfo);
@@ -42,20 +42,23 @@ public interface VideoInfoMapper {
     @Update("UPDATE video_infos SET state = #{state} WHERE bvid = #{bvid}")
     void updateStatus(@Param("state") String status, @Param("bvid") String bvid);
 
+    @Update("UPDATE video_infos SET downloading = #{downloading} WHERE bvid = #{bvid}")
+    void updateDownloading(String bvid, int downloading);
+
     @Update("""
             UPDATE video_infos SET
             `view` = #{view},danmaku = #{danmaku},favorite = #{favorite},coin = #{coin},
             `like` = #{like},share = #{share},reply = #{reply},tags = #{tags},pages_version_list = #{pagesVersionList},
             downloading = #{downloading},community_update_time = #{communityUpdateTime},
-            config_id = #{configId},duration = #{duration},
-            state = #{state},total_comment_floor = #{totalCommentFloor}
+            config_id = #{configId},duration = #{duration},staff = #{staff},
+            state = #{state},total_comment_floor = #{totalCommentFloor},metadata_changes = #{metadataChanges},
+            try_search = #{trySearch}
             WHERE bvid = #{bvid}
             """)
     void update(ArchiveVideoInfo videoInfo);
 
-
     @Update("UPDATE video_infos SET title = #{title},tname = #{tname},cover_url = #{coverUrl} WHERE bvid = #{bvid}")
-    void supplementaryFailedVideoInfo(@Param("bvid") String bvid,@Param("title") String title, @Param("tname") String tagName,
+    void supplementaryFailedVideoInfo(@Param("bvid") String bvid, @Param("title") String title, @Param("tname") String tagName,
                                       @Param("coverUrl") String coverUrl);
 
     @Update("UPDATE video_infos SET state = #{state} WHERE bvid = #{bvid}")
@@ -68,17 +71,20 @@ public interface VideoInfoMapper {
     int selectUpAvatarCount(@Param("url") String avatarUrl);
 
     @Update("update video_infos set config_id = #{configId} where bvid = #{bvid}")
-    void updateConfigId(String bvid,int configId);
+    void updateConfigId(String bvid, int configId);
+
+    @Select("select * from video_infos where title LIKE #{searchText} ORDER BY save_time DESC")
+    List<ArchiveVideoInfo> searchVideos(String searchText);
 
     @Select("""
-    <script>
-        SELECT * FROM video_infos
-        <where>
-            <if test="searchText != null">title LIKE #{searchText}</if>
-        </where>
-        ORDER BY ${sortBy} ${sortType}
-        LIMIT #{offset}, #{size}
-    </script>
-    """)
+            <script>
+                SELECT * FROM video_infos
+                <where>
+                    <if test="searchText != null">title LIKE #{searchText}</if>
+                </where>
+                ORDER BY ${sortBy} ${sortType}
+                LIMIT #{offset}, #{size}
+            </script>
+            """)
     List<ArchiveVideoInfo> selectBySearch(String searchText, String sortBy, String sortType, int offset, int size);
 }
